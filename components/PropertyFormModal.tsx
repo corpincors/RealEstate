@@ -1,0 +1,439 @@
+
+import React, { useState, useEffect, useRef } from 'react';
+import { Property, PropertyCategory } from '../types';
+import { X, Home, Maximize2, Layers, Camera, Plus, Phone } from './Icons';
+import MultiSelect from './MultiSelect';
+import { 
+  ROOMS_OPTIONS, LAND_TYPES, HOUSE_TYPES, REPAIR_TYPES, HOUSING_CLASSES,
+  HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, COMM_OPTIONS, INFRA_OPTIONS 
+} from '../constants.tsx';
+
+interface PropertyFormModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (property: Property) => void;
+  editingProperty: Property | null;
+  availableDistricts: string[];
+}
+
+const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  onSave, 
+  editingProperty,
+  availableDistricts
+}) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [formData, setFormData] = useState<Partial<Property>>({
+    category: 'apartments',
+    type: 'Secondary',
+    price: 0,
+    district: '',
+    address: '',
+    ownerPhone: '',
+    totalArea: 0,
+    rooms: ROOMS_OPTIONS[0],
+    houseType: HOUSE_TYPES[0],
+    housingClass: 'Комфорт',
+    hasFurniture: false,
+    hasRepair: false,
+    repairType: REPAIR_TYPES[0],
+    heating: HEATING_OPTIONS[0],
+    tech: [],
+    comfort: [],
+    comm: [],
+    infra: [],
+    isEOselya: false,
+    description: '',
+    imageUrls: []
+  });
+
+  useEffect(() => {
+    if (editingProperty) {
+      setFormData(editingProperty);
+    } else if (isOpen) {
+      setFormData({
+        category: 'apartments',
+        type: 'Secondary',
+        price: 0,
+        district: '',
+        address: '',
+        ownerPhone: '',
+        totalArea: 0,
+        rooms: ROOMS_OPTIONS[0],
+        houseType: HOUSE_TYPES[0],
+        housingClass: 'Комфорт',
+        hasFurniture: false,
+        hasRepair: false,
+        repairType: REPAIR_TYPES[0],
+        heating: HEATING_OPTIONS[0],
+        tech: [],
+        comfort: [],
+        comm: [],
+        infra: [],
+        isEOselya: false,
+        description: '',
+        imageUrls: []
+      });
+    }
+  }, [editingProperty, isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+    setFormData(prev => ({ ...prev, [name]: type === 'number' ? Number(val) : val }));
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const readers = Array.from(files).map((file) => {
+      return new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          resolve(event.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    const results = await Promise.all(readers);
+    setFormData(prev => ({ 
+      ...prev, 
+      imageUrls: [...(prev.imageUrls || []), ...results] 
+    }));
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  const removePhoto = (index: number) => {
+    setFormData(prev => ({ ...prev, imageUrls: (prev.imageUrls || []).filter((_, i) => i !== index) }));
+  };
+
+  const handleToggle = (name: keyof Property) => {
+    setFormData(prev => ({ ...prev, [name]: !prev[name] }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.district) {
+      alert('Пожалуйста, укажите район');
+      return;
+    }
+    const newProperty: Property = {
+      ...formData as Property,
+      id: formData.id || Math.random().toString(36).substr(2, 9),
+      imageUrls: formData.imageUrls?.length ? formData.imageUrls : [`https://picsum.photos/seed/${Math.random()}/800/600`]
+    };
+    onSave(newProperty);
+  };
+
+  const isLand = formData.category === 'land';
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[200] flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-5xl max-h-[95vh] rounded-[3rem] overflow-y-auto relative custom-scrollbar animate-in zoom-in-95 duration-300">
+        <div className="sticky top-0 bg-white/90 backdrop-blur-md z-10 px-10 py-6 border-b border-slate-100 flex justify-between items-center">
+          <div>
+            <h2 className="text-3xl font-[900] text-slate-900 tracking-tight">
+              {editingProperty ? 'Редактировать объект' : 'Добавить новый объект'}
+            </h2>
+            <p className="text-slate-500 font-bold text-[10px] uppercase tracking-widest mt-1">Детальные характеристики CRM</p>
+          </div>
+          <button onClick={onClose} className="p-3 bg-slate-50 rounded-2xl hover:bg-slate-100 transition">
+            <X className="w-6 h-6 text-slate-400" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-10 space-y-12">
+          {/* PHOTO UPLOAD SECTION */}
+          <section className="space-y-6">
+            <div className="flex items-center gap-3 text-slate-900">
+              <Camera className="w-5 h-5" />
+              <h3 className="text-sm font-black uppercase tracking-widest">Фотографии объекта</h3>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {formData.imageUrls?.map((url, idx) => (
+                <div key={idx} className="aspect-square rounded-2xl overflow-hidden relative group shadow-sm border border-slate-100">
+                  <img src={url} className="w-full h-full object-cover" alt="" />
+                  <button 
+                    type="button"
+                    onClick={() => removePhoto(idx)}
+                    className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition backdrop-blur-sm"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+              
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                className="hidden" 
+                multiple 
+                accept="image/*" 
+                onChange={handleFileChange} 
+              />
+              
+              <button 
+                type="button"
+                onClick={triggerFileInput}
+                className="aspect-square rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-blue-50 hover:border-blue-200 transition group"
+              >
+                <div className="bg-slate-50 group-hover:bg-blue-100 p-3 rounded-xl transition">
+                   <Plus className="w-6 h-6 text-slate-400 group-hover:text-blue-500" />
+                </div>
+                <span className="text-[10px] font-black text-slate-400 group-hover:text-blue-600 uppercase tracking-widest">Галерея</span>
+              </button>
+            </div>
+          </section>
+
+          {/* BASIC INFO */}
+          <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="space-y-2">
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Категория</label>
+              <select 
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
+              >
+                <option value="apartments">Квартиры</option>
+                <option value="cottage">Коттеджи</option>
+                <option value="townhouse">Таунхаусы</option>
+                <option value="commercial">Коммерция</option>
+                <option value="land">Земельные участки</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Район</label>
+              <input 
+                list="districts-list"
+                name="district"
+                value={formData.district}
+                onChange={handleChange}
+                placeholder="Выберите или введите..."
+                className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
+              />
+              <datalist id="districts-list">
+                {availableDistricts.map(d => <option key={d} value={d} />)}
+              </datalist>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Цена ($)</label>
+              <input 
+                type="number"
+                name="price"
+                value={formData.price}
+                onChange={handleChange}
+                className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
+                required
+              />
+            </div>
+          </section>
+
+          {/* SENSITIVE / OWNER INFO */}
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-blue-50/50 p-8 rounded-[2.5rem]">
+             <div className="space-y-2">
+              <label className="text-[11px] font-black text-blue-400 uppercase tracking-widest ml-2">Номер телефона владельца</label>
+              <div className="relative">
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-300" />
+                <input 
+                  type="text"
+                  name="ownerPhone"
+                  value={formData.ownerPhone}
+                  onChange={handleChange}
+                  placeholder="+380 ..."
+                  className="w-full bg-white border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 pl-12 outline-none font-bold text-slate-700 transition shadow-sm"
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[11px] font-black text-blue-400 uppercase tracking-widest ml-2">Точный адрес</label>
+              <div className="relative">
+                <Home className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-300" />
+                <input 
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="Улица, дом, кв..."
+                  className="w-full bg-white border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 pl-12 outline-none font-bold text-slate-700 transition shadow-sm"
+                  required
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* DYNAMIC FIELDS BASED ON CATEGORY */}
+          <section className="space-y-10">
+            {isLand ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Площадь земли (сот.)</label>
+                  <input type="number" name="landArea" value={formData.landArea || 0} onChange={handleChange} className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Тип земли</label>
+                  <select name="landType" value={formData.landType || ''} onChange={handleChange} className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold">
+                    {LAND_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Вид объекта</label>
+                  <select name="type" value={formData.type} onChange={handleChange} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">
+                    <option value="Secondary">Вторичка</option>
+                    <option value="New Build">Новостройка</option>
+                    <option value="Construction">Строящийся</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Комнат</label>
+                  <select name="rooms" value={formData.rooms} onChange={handleChange} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">
+                    {ROOMS_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Этаж / Этажность</label>
+                  <div className="flex gap-2">
+                    <input type="number" name="floor" placeholder="7" value={formData.floor || ''} onChange={handleChange} className="w-1/2 bg-slate-50 rounded-2xl p-4 outline-none font-bold" />
+                    <input type="number" name="totalFloors" placeholder="12" value={formData.totalFloors || ''} onChange={handleChange} className="w-1/2 bg-slate-50 rounded-2xl p-4 outline-none font-bold" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Общая пл. / Кухни</label>
+                  <div className="flex gap-2">
+                    <input type="number" name="totalArea" placeholder="85" value={formData.totalArea || ''} onChange={handleChange} className="w-1/2 bg-slate-50 rounded-2xl p-4 outline-none font-bold" required />
+                    <input type="number" name="kitchenArea" placeholder="15" value={formData.kitchenArea || ''} onChange={handleChange} className="w-1/2 bg-slate-50 rounded-2xl p-4 outline-none font-bold" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Тип дома</label>
+                  <select name="houseType" value={formData.houseType} onChange={handleChange} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">
+                    {HOUSE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Класс жилья</label>
+                  <select name="housingClass" value={formData.housingClass} onChange={handleChange} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">
+                    {HOUSING_CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Вид ремонта</label>
+                  <select name="repairType" value={formData.repairType} onChange={handleChange} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">
+                    {REPAIR_TYPES.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Отопление</label>
+                  <select name="heating" value={formData.heating} onChange={handleChange} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">
+                    {HEATING_OPTIONS.map(h => <option key={h} value={h}>{h}</option>)}
+                  </select>
+                </div>
+              </div>
+            )}
+            
+            {!isLand && (
+              <div className="flex flex-wrap gap-10 py-4">
+                <label className="flex items-center gap-4 cursor-pointer group">
+                  <div className={`w-12 h-6 rounded-full relative transition-colors ${formData.hasFurniture ? 'bg-blue-600' : 'bg-slate-200'}`} onClick={() => handleToggle('hasFurniture')}>
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.hasFurniture ? 'left-7' : 'left-1'}`}></div>
+                  </div>
+                  <span className="text-xs font-black text-slate-500 uppercase tracking-widest group-hover:text-blue-600">Меблировка</span>
+                </label>
+                <label className="flex items-center gap-4 cursor-pointer group">
+                  <div className={`w-12 h-6 rounded-full relative transition-colors ${formData.hasRepair ? 'bg-indigo-600' : 'bg-slate-200'}`} onClick={() => handleToggle('hasRepair')}>
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.hasRepair ? 'left-7' : 'left-1'}`}></div>
+                  </div>
+                  <span className="text-xs font-black text-slate-500 uppercase tracking-widest group-hover:text-indigo-600">Ремонт</span>
+                </label>
+                <label className="flex items-center gap-4 cursor-pointer group">
+                  <div className={`w-12 h-6 rounded-full relative transition-colors ${formData.isEOselya ? 'bg-emerald-600' : 'bg-slate-200'}`} onClick={() => handleToggle('isEOselya')}>
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.isEOselya ? 'left-7' : 'left-1'}`}></div>
+                  </div>
+                  <span className="text-xs font-black text-slate-500 uppercase tracking-widest group-hover:text-emerald-600">єОселя</span>
+                </label>
+              </div>
+            )}
+          </section>
+
+          {/* MULTI SELECTS */}
+          <section className="space-y-10">
+            <div className="flex items-center gap-3 text-emerald-600">
+              <div className="bg-emerald-50 p-2 rounded-xl"><Layers className="w-5 h-5" /></div>
+              <h3 className="text-sm font-black uppercase tracking-widest">Дополнительные опции</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <MultiSelect 
+                label="Бытовая техника" 
+                prefix="Выбрано" 
+                options={TECH_OPTIONS} 
+                selected={formData.tech || []} 
+                onChange={(s) => setFormData(p => ({...p, tech: s}))} 
+              />
+              <MultiSelect 
+                label="Комфорт" 
+                prefix="Выбрано" 
+                options={COMFORT_OPTIONS} 
+                selected={formData.comfort || []} 
+                onChange={(s) => setFormData(p => ({...p, comfort: s}))} 
+              />
+              <MultiSelect 
+                label="Коммуникации" 
+                prefix="Выбрано" 
+                options={COMM_OPTIONS} 
+                selected={formData.comm || []} 
+                onChange={(s) => setFormData(p => ({...p, comm: s}))} 
+              />
+              <MultiSelect 
+                label="Инфраструктура" 
+                prefix="Выбрано" 
+                options={INFRA_OPTIONS} 
+                selected={formData.infra || []} 
+                onChange={(s) => setFormData(p => ({...p, infra: s}))} 
+              />
+            </div>
+          </section>
+
+          <section className="space-y-4">
+             <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Описание объекта</label>
+             <textarea 
+               name="description"
+               value={formData.description}
+               onChange={handleChange}
+               className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-[2rem] p-6 outline-none font-medium text-slate-700 min-h-[150px] transition"
+               placeholder="Опишите все преимущества объекта..."
+             ></textarea>
+          </section>
+
+          <button 
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-[2rem] font-[900] uppercase tracking-[0.25em] shadow-2xl shadow-blue-200 transition-all active:scale-[0.98]"
+          >
+            {editingProperty ? 'Сохранить изменения' : 'Разместить в CRM'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default PropertyFormModal;
