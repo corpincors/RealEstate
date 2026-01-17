@@ -28,6 +28,7 @@ export interface Property {
   landType?: string;
   description: string;
   imageUrls: string[];
+  publicLink?: string; // Added field for the public client link
 }
 
 export interface FilterState {

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Property } from '../types';
 import { MapPin, Heart, Eye, Phone, Link as LinkIcon, ChevronLeft, ChevronRight, Trash2 } from './Icons';
+import { showSuccess, showError } from '../src/utils/toast'; // Import toast utilities
 
 interface PropertyCardProps {
   property: Property;
@@ -24,11 +25,28 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onEdit, onDelete,
     setCurrentImg((prev: number) => (prev - 1 + property.imageUrls.length) % property.imageUrls.length);
   };
 
-  const generateClientLink = (e: React.MouseEvent) => {
+  const generateClientLink = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const clientUrl = `${window.location.origin}/property/${property.id}?clientMode=true`;
-    navigator.clipboard.writeText(clientUrl);
-    alert('Ссылка для клиента скопирована! (Номер владельца скрыт)');
+
+    try {
+      // Update the property in the database with the generated public link
+      const response = await fetch(`/api/properties/${property.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...property, publicLink: clientUrl }), // Save the generated link
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save public link to database');
+      }
+
+      await navigator.clipboard.writeText(clientUrl);
+      showSuccess('Ссылка для клиента скопирована и сохранена!');
+    } catch (error) {
+      console.error("Error generating or saving client link:", error);
+      showError('Ошибка при создании или сохранении ссылки для клиента.');
+    }
   };
 
   return (
