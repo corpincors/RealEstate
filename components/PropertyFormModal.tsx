@@ -391,43 +391,45 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
           </section>
 
           {/* MULTI SELECTS */}
-          <section className="space-y-10">
-            <div className="flex items-center gap-3 text-emerald-600">
-              <div className="bg-emerald-50 p-2 rounded-xl"><Layers className="w-5 h-5" /></div>
-              <h3 className="text-sm font-black uppercase tracking-widest">Дополнительные опции</h3>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <MultiSelect 
-                label="Бытовая техника" 
-                prefix="Выбрано" 
-                options={TECH_OPTIONS} 
-                selected={formData.tech || []} 
-                onChange={(s) => setFormData(p => ({...p, tech: s}))} 
-              />
-              <MultiSelect 
-                label="Комфорт" 
-                prefix="Выбрано" 
-                options={COMFORT_OPTIONS} 
-                selected={formData.comfort || []} 
-                onChange={(s) => setFormData(p => ({...p, comfort: s}))} 
-              />
-              <MultiSelect 
-                label="Коммуникации" 
-                prefix="Выбрано" 
-                options={COMM_OPTIONS} 
-                selected={formData.comm || []} 
-                onChange={(s) => setFormData(p => ({...p, comm: s}))} 
-              />
-              <MultiSelect 
-                label="Инфраструктура" 
-                prefix="Выбрано" 
-                options={INFRA_OPTIONS} 
-                selected={formData.infra || []} 
-                onChange={(s) => setFormData(p => ({...p, infra: s}))} 
-              />
-            </div>
-          </section>
+          {!isLand && ( // Условное отображение для секции "Дополнительные опции"
+            <section className="space-y-10">
+              <div className="flex items-center gap-3 text-emerald-600">
+                <div className="bg-emerald-50 p-2 rounded-xl"><Layers className="w-5 h-5" /></div>
+                <h3 className="text-sm font-black uppercase tracking-widest">Дополнительные опции</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <MultiSelect 
+                  label="Бытовая техника" 
+                  prefix="Выбрано" 
+                  options={TECH_OPTIONS} 
+                  selected={formData.tech || []} 
+                  onChange={(s) => setFormData(p => ({...p, tech: s}))} 
+                />
+                <MultiSelect 
+                  label="Комфорт" 
+                  prefix="Выбрано" 
+                  options={COMFORT_OPTIONS} 
+                  selected={formData.comfort || []} 
+                  onChange={(s) => setFormData(p => ({...p, comfort: s}))} 
+                />
+                <MultiSelect 
+                  label="Коммуникации" 
+                  prefix="Выбрано" 
+                  options={COMM_OPTIONS} 
+                  selected={formData.comm || []} 
+                  onChange={(s) => setFormData(p => ({...p, comm: s}))} 
+                />
+                <MultiSelect 
+                  label="Инфраструктура" 
+                  prefix="Выбрано" 
+                  options={INFRA_OPTIONS} 
+                  selected={formData.infra || []} 
+                  onChange={(s) => setFormData(p => ({...p, infra: s}))} 
+                />
+              </div>
+            </section>
+          )}
 
           <section className="space-y-4">
              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Описание объекта</label>
