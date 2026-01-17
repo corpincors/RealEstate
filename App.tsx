@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Property, FilterState, PropertyCategory } from './types';
 import { 
-  INITIAL_PROPERTIES, DISTRICTS, ROOMS_OPTIONS, LAND_TYPES, HOUSE_TYPES, 
+  DISTRICTS, ROOMS_OPTIONS, LAND_TYPES, HOUSE_TYPES, 
   REPAIR_TYPES, HOUSING_CLASSES, HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, 
   COMM_OPTIONS, INFRA_OPTIONS, CATEGORIES 
 } from './constants.tsx';
@@ -12,30 +12,34 @@ import PropertyFormModal from './components/PropertyFormModal';
 import MultiSelect from './components/MultiSelect';
 import PropertyDetailPage from './src/pages/PropertyDetailPage';
 
+const API_URL = '/api/properties'; // Используем прокси для доступа к json-server
+
 const App: React.FC = () => {
-  // Загрузка данных из localStorage или использование INITIAL_PROPERTIES
-  const [properties, setProperties] = useState<Property[]>(() => {
-    try {
-      const savedProperties = localStorage.getItem('realtyProperties');
-      return savedProperties ? JSON.parse(savedProperties) : INITIAL_PROPERTIES;
-    } catch (error) {
-      console.error("Failed to load properties from localStorage:", error);
-      return INITIAL_PROPERTIES;
-    }
-  });
+  const [properties, setProperties] = useState<Property[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Сохранение данных в localStorage при каждом изменении properties
-  useEffect(() => {
+  // Функция для загрузки объектов
+  const fetchProperties = useCallback(async () => {
     try {
-      localStorage.setItem('realtyProperties', JSON.stringify(properties));
+      const response = await fetch(API_URL);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data: Property[] = await response.json();
+      setProperties(data);
     } catch (error) {
-      console.error("Failed to save properties to localStorage:", error);
+      console.error("Failed to fetch properties:", error);
+      // Если API недоступен, можно использовать начальные данные из constants.tsx
+      // setProperties(INITIAL_PROPERTIES); 
     }
-  }, [properties]);
+  }, []);
+
+  useEffect(() => {
+    fetchProperties();
+  }, [fetchProperties]);
 
   const isClientMode = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -95,7 +99,7 @@ const App: React.FC = () => {
       if (lowerCaseKeywords) {
         const matchesAddress = p.address.toLowerCase().includes(lowerCaseKeywords);
         const matchesDescription = p.description.toLowerCase().includes(lowerCaseKeywords);
-        const matchesOwnerPhone = p.ownerPhone.toLowerCase().includes(lowerCaseKeywords); // Добавлена проверка номера телефона
+        const matchesOwnerPhone = p.ownerPhone.toLowerCase().includes(lowerCaseKeywords);
         if (!matchesAddress && !matchesDescription && !matchesOwnerPhone) return false;
       }
 
@@ -132,20 +136,46 @@ const App: React.FC = () => {
     });
   }, [properties, filters]);
 
-  const handleSaveProperty = (property: Property) => {
-    setProperties(prev => {
-      const exists = prev.find(p => p.id === property.id);
-      if (exists) {
-        return prev.map(p => p.id === property.id ? property : p);
+  const handleSaveProperty = async (property: Property) => {
+    try {
+      if (property.id) {
+        // Обновление существующего объекта
+        const response = await fetch(`${API_URL}/${property.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(property),
+        });
+        if (!response.ok) throw new Error('Failed to update property');
+      } else {
+        // Добавление нового объекта
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(property),
+        });
+        if (!response.ok) throw new Error('Failed to add property');
       }
-      return [property, ...prev];
-    });
-    setIsModalOpen(false);
-    setEditingProperty(null);
+      fetchProperties(); // Перезагружаем данные после сохранения
+      setIsModalOpen(false);
+      setEditingProperty(null);
+    } catch (error) {
+      console.error("Error saving property:", error);
+      alert("Ошибка при сохранении объекта. Пожалуйста, проверьте консоль.");
+    }
   };
 
-  const handleDeleteProperty = (id: string) => {
-    setProperties(prev => prev.filter(p => p.id !== id));
+  const handleDeleteProperty = async (id: string) => {
+    if (!window.confirm('Вы уверены, что хотите удалить этот объект?')) return;
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete property');
+      fetchProperties(); // Перезагружаем данные после удаления
+    } catch (error) {
+      console.error("Error deleting property:", error);
+      alert("Ошибка при удалении объекта. Пожалуйста, проверьте консоль.");
+    }
   };
 
   const resetFilters = () => {

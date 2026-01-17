@@ -1,0 +1,49 @@
+{
+  "properties": [
+    {
+      "id": "1",
+      "category": "apartments",
+      "type": "New Build",
+      "price": 135000,
+      "district": "Приморский",
+      "address": "Генуэзская, 24/1",
+      "ownerPhone": "+380 67 123 45 67",
+      "floor": 14,
+      "totalFloors": 24,
+      "rooms": "2",
+      "totalArea": 72,
+      "kitchenArea": 18,
+      "houseType": "Монолит",
+      "housingClass": "Бизнес",
+      "hasFurniture": true,
+      "hasRepair": true,
+      "repairType": "Авторский проект",
+      "heating": "Собственная котельная",
+      "tech": [
+        "Варочная панель",
+        "Холодильник"
+      ],
+      "comfort": [
+        "Видеонаблюдение",
+        "Охрана территории",
+        "Подземный паркинг",
+        "Панорамные окна"
+      ],
+      "comm": [
+        "Центральный водопровод",
+        "Электрика"
+      ],
+      "infra": [
+        "Парк, зеленая зона",
+        "ТРЦ"
+      ],
+      "isEOselya": true,
+      "description": "Шикарная квартира в ЖК Гольфстрим.",
+      "imageUrls": [
+        "https://picsum.photos/seed/apt1_1/800/600",
+        "https://picsum.photos/seed/apt1_2/800/600",
+        "https://picsum.photos/seed/apt1_3/800/600"
+      ]
+    }
+  ]
+}
