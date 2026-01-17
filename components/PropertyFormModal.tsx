@@ -31,7 +31,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     address: '',
     ownerPhone: '',
     totalArea: 0,
-    rooms: ROOMS_OPTIONS[0],
+    rooms: '1', // Изменено на '1' для числового ввода по умолчанию
     houseType: HOUSE_TYPES[0],
     housingClass: 'Комфорт',
     hasFurniture: false,
@@ -59,7 +59,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
         address: '',
         ownerPhone: '',
         totalArea: 0,
-        rooms: ROOMS_OPTIONS[0],
+        rooms: '1', // Изменено на '1' для числового ввода по умолчанию
         houseType: HOUSE_TYPES[0],
         housingClass: 'Комфорт',
         hasFurniture: false,
@@ -81,15 +81,25 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
-    setFormData(prev => ({ ...prev, [name]: type === 'number' ? Number(val) : val }));
+    let val: string | number | boolean = value;
+
+    if (type === 'checkbox') {
+      val = (e.target as HTMLInputElement).checked;
+    } else if (name === 'rooms') {
+      // Для поля 'rooms' всегда сохраняем значение как строку
+      val = String(value);
+    } else if (type === 'number') {
+      val = Number(value);
+    }
+    
+    setFormData(prev => ({ ...prev, [name]: val }));
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    const readers = Array.from(files).map((file: File) => { // Явно указываем тип 'file' как 'File'
+    const readers = Array.from(files).map((file: File) => {
       return new Promise<string>((resolve) => {
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -304,9 +314,16 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                 </div>
                 <div className="space-y-2">
                   <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Комнат</label>
-                  <select name="rooms" value={formData.rooms} onChange={handleChange} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">
-                    {ROOMS_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-                  </select>
+                  <input 
+                    type="number"
+                    name="rooms"
+                    // Если formData.rooms - нечисловое значение ('Студия', '5+'), отображаем пустую строку
+                    value={['Студия', '5+'].includes(formData.rooms || '') ? '' : formData.rooms}
+                    onChange={handleChange}
+                    placeholder="Количество комнат"
+                    className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
+                    min="1" // Минимальное количество комнат
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Этаж / Этажность</label>
