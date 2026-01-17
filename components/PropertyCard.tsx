@@ -28,17 +28,26 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onEdit, onDelete,
   const generateClientLink = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const clientUrl = `${window.location.origin}/property/${property.id}?clientMode=true`;
+    console.log('Generated client URL:', clientUrl);
 
     try {
       // Update the property in the database with the generated public link
+      const updatedProperty = { ...property, publicLink: clientUrl };
+      console.log('Sending PUT request with data:', updatedProperty);
+
       const response = await fetch(`/api/properties/${property.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...property, publicLink: clientUrl }), // Save the generated link
+        body: JSON.stringify(updatedProperty), // Save the generated link
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response OK:', response.ok);
+
       if (!response.ok) {
-        throw new Error('Failed to save public link to database');
+        const errorText = await response.text();
+        console.error('Server response error:', errorText);
+        throw new Error(`Failed to save public link to database: ${response.status} ${errorText}`);
       }
 
       await navigator.clipboard.writeText(clientUrl);
