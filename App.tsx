@@ -156,7 +156,7 @@ const App: React.FC = () => {
           </div>
           <div>
             <h1 className="text-3xl font-[900] text-slate-900 tracking-tight">
-              {isClientMode ? 'Real Estate Catalog' : 'Realty CRM'}
+              {isClientMode ? 'Real Estate Catalog' : 'MaryanaEstate'}
             </h1>
             <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.4em]">
               {isClientMode ? 'Client Portfolio' : 'Expert Management'}
