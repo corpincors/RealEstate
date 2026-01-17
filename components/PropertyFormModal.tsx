@@ -148,7 +148,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     const newProperty: Property = {
       ...formData as Property,
       id: formData.id || Math.random().toString(36).substr(2, 9),
-      imageUrls: formData.imageUrls?.length ? formData.imageUrls : [`https://picsum.photos/seed/${Math.random()}/800/600`]
+      imageUrls: formData.imageUrls?.length ? formData.imageUrls : ['https://via.placeholder.com/800x600/f0f4f8/94a3b8?text=Домик'] // Изменено здесь
     };
     onSave(newProperty);
   };
