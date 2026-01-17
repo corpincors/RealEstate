@@ -61,14 +61,24 @@ const App: React.FC = () => {
     comfort: [],
     comm: [],
     infra: [],
+    keywords: '', // Инициализируем поле для ключевых слов
   });
 
   const filteredProperties = useMemo(() => {
+    const lowerCaseKeywords = filters.keywords.toLowerCase();
+
     return properties.filter(p => {
       if (p.category !== filters.category) return false;
       if (filters.minPrice && p.price < Number(filters.minPrice)) return false;
       if (filters.maxPrice && p.price > Number(filters.maxPrice)) return false;
       if (filters.district !== 'Любой' && p.district !== filters.district) return false;
+
+      // Фильтрация по ключевым словам
+      if (lowerCaseKeywords) {
+        const matchesAddress = p.address.toLowerCase().includes(lowerCaseKeywords);
+        const matchesDescription = p.description.toLowerCase().includes(lowerCaseKeywords);
+        if (!matchesAddress && !matchesDescription) return false;
+      }
 
       if (filters.category === 'land') {
         if (filters.minLandArea && (p.landArea || 0) < Number(filters.minLandArea)) return false;
@@ -129,6 +139,7 @@ const App: React.FC = () => {
       hasFurniture: null, hasRepair: null, repairType: 'Любой', heating: 'Любой',
       isEOselya: null, landType: 'Любой', minLandArea: '', maxLandArea: '',
       tech: [], comfort: [], comm: [], infra: [],
+      keywords: '', // Сбрасываем ключевые слова
     });
   };
 
@@ -159,7 +170,7 @@ const App: React.FC = () => {
             <PlusCircle className="w-5 h-5" /> Добавить объект
           </button>
         )}
-        {isClientMode && !isDetailPage && ( // Изменено условие здесь
+        {isClientMode && !isDetailPage && ( 
           <button 
             onClick={() => {
               navigate('/');
@@ -211,6 +222,17 @@ const App: React.FC = () => {
                         <input type="number" placeholder="От" value={filters.minPrice} onChange={(e) => setFilters({...filters, minPrice: e.target.value})} className="w-1/2 bg-slate-50 rounded-2xl p-4 text-sm font-bold outline-none" />
                         <input type="number" placeholder="До" value={filters.maxPrice} onChange={(e) => setFilters({...filters, maxPrice: e.target.value})} className="w-1/2 bg-slate-50 rounded-2xl p-4 text-sm font-bold outline-none" />
                       </div>
+                    </div>
+
+                    <div className="space-y-3 lg:col-span-2"> {/* Расширяем на 2 колонки для лучшего вида */}
+                      <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Ключевые слова</label>
+                      <input 
+                        type="text" 
+                        placeholder="Поиск по адресу, описанию..." 
+                        value={filters.keywords} 
+                        onChange={(e) => setFilters({...filters, keywords: e.target.value})} 
+                        className="w-full bg-slate-50 rounded-2xl p-4 text-sm font-bold outline-none" 
+                      />
                     </div>
 
                     {isLand ? (

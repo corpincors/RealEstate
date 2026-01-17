@@ -1,4 +1,3 @@
-
 export type PropertyCategory = 'apartments' | 'cottage' | 'townhouse' | 'commercial' | 'land';
 
 export interface Property {
@@ -60,4 +59,5 @@ export interface FilterState {
   comfort: string[];
   comm: string[];
   infra: string[];
+  keywords: string; // Добавлено поле для поиска по ключевым словам
 }
