@@ -8,7 +8,7 @@ import {
 } from './constants.tsx';
 import { PlusCircle, Search, Plus, Home, LogOut, ChevronDown } from './components/Icons';
 import PropertyCard from './components/PropertyCard';
-import PropertyFormModal from './components/PropertyFormModal'; // Исправленный путь
+import PropertyFormModal from './components/PropertyFormModal';
 import MultiSelect from './components/MultiSelect';
 import PropertyDetailPage from './src/pages/PropertyDetailPage';
 import LoginPage from '@/src/pages/LoginPage';
@@ -334,19 +334,17 @@ const App: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="lg:col-span-2"></div> 
-                    </div>
-
-                    {/* Toggle for Additional Filters */}
-                    <div className="flex justify-center">
-                      <button
-                        type="button"
-                        onClick={() => setShowAdditionalFilters(prev => !prev)}
-                        className="flex items-center gap-2 px-6 py-3 bg-slate-50 hover:bg-slate-100 rounded-xl font-bold text-xs uppercase tracking-widest text-slate-600 transition-all active:scale-95"
-                      >
-                        {showAdditionalFilters ? 'Скрыть дополнительные фильтры' : 'Показать дополнительные фильтры'}
-                        <ChevronDown className={`w-4 h-4 transition-transform ${showAdditionalFilters ? 'rotate-180' : ''}`} />
-                      </button>
+                      {/* Toggle for Additional Filters - New Position */}
+                      <div className="lg:col-span-2 flex justify-end items-end">
+                        <button
+                          type="button"
+                          onClick={() => setShowAdditionalFilters(prev => !prev)}
+                          className="flex items-center gap-2 px-6 py-3 bg-slate-50 hover:bg-slate-100 rounded-xl font-bold text-xs uppercase tracking-widest text-slate-600 transition-all active:scale-95"
+                        >
+                          {showAdditionalFilters ? 'Скрыть дополнительные фильтры' : 'Показать дополнительные фильтры'}
+                          <ChevronDown className={`w-4 h-4 transition-transform ${showAdditionalFilters ? 'rotate-180' : ''}`} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Additional Filters Section (Conditional) */}
