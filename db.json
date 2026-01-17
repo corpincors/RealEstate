@@ -351,6 +351,36 @@
         "https://via.placeholder.com/800x600/f0f4f8/94a3b8?text=Домик"
       ],
       "kitchenArea": 32
+    },
+    {
+      "id": "tdx4tnbtg",
+      "category": "apartments",
+      "type": "Secondary",
+      "price": 213213,
+      "district": "Киевский",
+      "address": "213123",
+      "ownerPhone": "3123",
+      "totalArea": 13123,
+      "rooms": "1",
+      "houseType": "Кирпичный",
+      "housingClass": "Комфорт",
+      "hasFurniture": false,
+      "hasRepair": false,
+      "repairType": "Косметический",
+      "heating": "Центральное",
+      "tech": [],
+      "comfort": [],
+      "comm": [],
+      "infra": [],
+      "isEOselya": false,
+      "description": "3213213",
+      "imageUrls": [
+        "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22600%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23cbd5e1%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%209l9-7%209%207v11a2%202%200%200%201-2%202H5a2%202%200%200%201-2-2z%22%3E%3C%2Fpath%3E%3Cpolyline%20points%3D%229%2022%209%2012%2015%2012%2015%2022%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E"
+      ],
+      "floor": 3213,
+      "totalFloors": 12321,
+      "kitchenArea": 123,
+      "publicLink": "http://192.168.5.101:3000/property/tdx4tnbtg?clientMode=true"
     }
   ]
 }

@@ -150,7 +150,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
       id: formData.id || Math.random().toString(36).substr(2, 9),
       imageUrls: formData.imageUrls?.length 
         ? formData.imageUrls 
-        : ['data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22600%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23cbd5e1%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%209l9-7%209%207v11a2%202%200%200%201-2%202H5a2%202%200%200%201-2-2z%22%3E%3C%2Fpath%3E%3Cpolyline%20points%3D%229%2022%209%2012%2015%2012%2015%2022%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E']
+        : ['data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22300%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23cbd5e1%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%209l9-7%209%207v11a2%202%200%200%201-2%202H5a2%202%200%200%201-2-2z%22%3E%3C%2Fpath%3E%3Cpolyline%20points%3D%229%2022%209%2012%2015%2012%2015%2022%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E']
     };
     onSave(newProperty);
   };
