@@ -1,5 +1,5 @@
 import React from 'react';
-import { X } from './Icons';
+import { X } from '../../components/Icons'; // Исправленный путь импорта
 
 interface EditableDistrictListProps {
   districts: string[];
