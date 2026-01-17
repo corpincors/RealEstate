@@ -65,6 +65,11 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onEdit, onDelete,
           <span className="bg-white/90 backdrop-blur-md text-slate-900 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg">
             {property.category === 'land' ? 'Участок' : property.type === 'New Build' ? 'Новостройка' : 'Вторичка'}
           </span>
+          {property.hasRepair && property.repairType !== 'Без ремонта' && (
+            <span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg">
+              {property.repairType}
+            </span>
+          )}
         </div>
         
         <button className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 backdrop-blur-md p-2.5 rounded-xl text-white transition">
