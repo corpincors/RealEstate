@@ -77,7 +77,8 @@ const App: React.FC = () => {
       if (lowerCaseKeywords) {
         const matchesAddress = p.address.toLowerCase().includes(lowerCaseKeywords);
         const matchesDescription = p.description.toLowerCase().includes(lowerCaseKeywords);
-        if (!matchesAddress && !matchesDescription) return false;
+        const matchesOwnerPhone = p.ownerPhone.toLowerCase().includes(lowerCaseKeywords); // Добавлена проверка номера телефона
+        if (!matchesAddress && !matchesDescription && !matchesOwnerPhone) return false;
       }
 
       if (filters.category === 'land') {
@@ -193,7 +194,7 @@ const App: React.FC = () => {
                     <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Ключевые слова</label>
                     <input 
                       type="text" 
-                      placeholder="Поиск по адресу, описанию..." 
+                      placeholder="Поиск по адресу, описанию, телефону..." 
                       value={filters.keywords} 
                       onChange={(e) => setFilters({...filters, keywords: e.target.value})} 
                       className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 text-sm font-bold outline-none transition" 
