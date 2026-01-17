@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Property, PropertyCategory } from '../types';
-import { X, Home, Maximize2, Layers, Camera, Plus, Phone, Trash2 } from './Icons';
+import { Property } from '../types'; // Удален PropertyCategory
+import { X, Home, Layers, Camera, Plus, Phone } from './Icons';
 import MultiSelect from './MultiSelect';
 import SingleSelectWithDelete from './SingleSelectWithDelete';
 import { 
-  ROOMS_OPTIONS, LAND_TYPES, HOUSE_TYPES, REPAIR_TYPES, HOUSING_CLASSES,
+  LAND_TYPES, HOUSE_TYPES, REPAIR_TYPES, HOUSING_CLASSES,
   HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, COMM_OPTIONS, INFRA_OPTIONS,
   INITIAL_DISTRICTS
 } from '../constants.tsx';
@@ -377,7 +377,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                 </label>
                 <label className="flex items-center gap-4 cursor-pointer group">
                   <div className={`w-12 h-6 rounded-full relative transition-colors ${formData.hasRepair ? 'bg-indigo-600' : 'bg-slate-200'}`} onClick={() => handleToggle('hasRepair')}>
-                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.hasRepair ? 'left-7' : 'left-1'}`}></div>
+                    <div sanded-full transition-all ${formData.hasRepair ? 'left-7' : 'left-1'}`}></div>
                   </div>
                   <span className="text-xs font-black text-slate-500 uppercase tracking-widest group-hover:text-indigo-600">Ремонт</span>
                 </label>

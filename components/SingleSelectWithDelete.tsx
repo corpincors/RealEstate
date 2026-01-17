@@ -55,7 +55,7 @@ const SingleSelectWithDelete: React.FC<SingleSelectWithDeleteProps> = ({
 
   const bgColorClass = `bg-${accentColor}-50/50`;
   const borderColorClass = `border-${accentColor}-100`;
-  const accentClass = `accent-${accentColor}-600`;
+  // const accentClass = `accent-${accentColor}-600`; // Удалена неиспользуемая переменная
 
   return (
     <div className="relative space-y-2" ref={containerRef}>

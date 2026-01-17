@@ -2,11 +2,11 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Property, FilterState, PropertyCategory } from './types';
 import { 
-  DISTRICTS, ROOMS_OPTIONS, LAND_TYPES, HOUSE_TYPES, 
+  ROOMS_OPTIONS, LAND_TYPES, HOUSE_TYPES, 
   REPAIR_TYPES, HOUSING_CLASSES, HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, 
   COMM_OPTIONS, INFRA_OPTIONS, CATEGORIES, INITIAL_DISTRICTS
 } from './constants.tsx';
-import { PlusCircle, Search, Plus, Home, ChevronDown, X, LogOut } from './components/Icons';
+import { PlusCircle, Search, Plus, Home, LogOut } from './components/Icons';
 import PropertyCard from './components/PropertyCard';
 import PropertyFormModal from './components/PropertyFormModal';
 import MultiSelect from './components/MultiSelect';
@@ -285,7 +285,7 @@ const App: React.FC = () => {
                     </div>
                     
                     <div className="flex flex-wrap gap-3 p-1.5 bg-slate-50 rounded-[2rem] w-fit">
-                      {CATEGORIES.map((cat: { id: PropertyCategory; label: string }) => (
+                      {CATEGORIES.map((cat) => ( // Removed explicit type here, relying on CATEGORIES type from constants.tsx
                         <button
                           key={cat.id}
                           onClick={() => setFilters(prev => ({ ...prev, category: cat.id as PropertyCategory }))}
