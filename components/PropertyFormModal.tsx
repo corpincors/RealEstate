@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Property } from '../types'; // Удален PropertyCategory
+import { Property } from '../types';
 import { X, Home, Layers, Camera, Plus, Phone } from './Icons';
 import MultiSelect from './MultiSelect';
 import SingleSelectWithDelete from './SingleSelectWithDelete';
@@ -377,7 +377,8 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                 </label>
                 <label className="flex items-center gap-4 cursor-pointer group">
                   <div className={`w-12 h-6 rounded-full relative transition-colors ${formData.hasRepair ? 'bg-indigo-600' : 'bg-slate-200'}`} onClick={() => handleToggle('hasRepair')}>
-                    <div sanded-full transition-all ${formData.hasRepair ? 'left-7' : 'left-1'}`}></div>
+                    {/* FIX: Corrected malformed div element */}
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.hasRepair ? 'left-7' : 'left-1'}`}></div>
                   </div>
                   <span className="text-xs font-black text-slate-500 uppercase tracking-widest group-hover:text-indigo-600">Ремонт</span>
                 </label>
