@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Client } from '../../types';
-import { PlusCircle, Users, Edit, Trash2 } from '../../components/Icons';
+import { PlusCircle, Users, Edit, Trash2, ChevronLeft } from '../../components/Icons'; // Import ChevronLeft
 import ClientFormModal from '../components/ClientFormModal';
 import { showSuccess, showError } from '../utils/toast';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const API_URL = '/api/clients';
 
@@ -12,6 +13,7 @@ const ClientsPage: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const fetchClients = useCallback(async () => {
     try {
@@ -112,12 +114,20 @@ const ClientsPage: React.FC = () => {
             </p>
           </div>
         </div>
-        <button
-          onClick={openAddModal}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 shadow-xl shadow-blue-100 transition-all active:scale-95"
-        >
-          <PlusCircle className="w-5 h-5" /> Добавить клиента
-        </button>
+        <div className="flex items-center gap-4"> {/* Added a div to group buttons */}
+          <button 
+            onClick={() => navigate('/')} // Navigate back to the main properties page
+            className="bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-3 rounded-2xl font-bold flex items-center gap-3 text-xs transition-all active:scale-95"
+          >
+            <ChevronLeft className="w-4 h-4" /> Назад к объектам
+          </button>
+          <button
+            onClick={openAddModal}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 shadow-xl shadow-blue-100 transition-all active:scale-95"
+          >
+            <PlusCircle className="w-5 h-5" /> Добавить клиента
+          </button>
+        </div>
       </header>
 
       <section className="bg-white p-8 lg:p-12 rounded-[3.5rem] shadow-sm border border-slate-50 mb-12">

@@ -1,4 +1,11 @@
 {
   "properties": [],
-  "clients": []
+  "clients": [
+    {
+      "id": "2q9jc2ss9",
+      "phoneNumber": "380399303",
+      "lastCalled": "2026-01-18T22:44:44.754Z",
+      "request": "бла бла бла "
+    }
+  ]
 }
