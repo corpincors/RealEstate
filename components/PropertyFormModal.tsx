@@ -6,7 +6,7 @@ import SingleSelectWithDelete from './SingleSelectWithDelete';
 import { 
   LAND_TYPES, HOUSE_TYPES, REPAIR_TYPES, HOUSING_CLASSES,
   HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, COMM_OPTIONS, INFRA_OPTIONS,
-  INITIAL_DISTRICTS, HOUSE_SUBTYPES
+  INITIAL_DISTRICTS, HOUSE_SUBTYPES, LOCATION_TYPES
 } from '../constants.tsx';
 
 interface PropertyFormModalProps {
@@ -49,7 +49,9 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     isEOselya: false,
     description: '',
     imageUrls: [],
-    houseSubtype: HOUSE_SUBTYPES[0] // Инициализация нового поля
+    houseSubtype: HOUSE_SUBTYPES[0], // Инициализация нового поля
+    locationType: 'inCity', // Инициализация нового поля
+    distanceFromCityKm: undefined // Инициализация нового поля
   });
 
   useEffect(() => {
@@ -78,7 +80,9 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
         isEOselya: false,
         description: '',
         imageUrls: [],
-        houseSubtype: HOUSE_SUBTYPES[0] // Сброс для нового объекта
+        houseSubtype: HOUSE_SUBTYPES[0], // Сброс для нового объекта
+        locationType: 'inCity', // Сброс для нового объекта
+        distanceFromCityKm: undefined // Сброс для нового объекта
       });
     }
   }, [editingProperty, isOpen]);
@@ -87,7 +91,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    let val: string | number | boolean = value;
+    let val: string | number | boolean | undefined = value;
 
     if (type === 'checkbox') {
       val = (e.target as HTMLInputElement).checked;
@@ -95,6 +99,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
       val = String(value);
     } else if (type === 'number') {
       val = Number(value);
+      if (isNaN(val)) val = undefined; // Handle empty number input
     }
     
     setFormData(prev => ({ ...prev, [name]: val }));
@@ -105,7 +110,18 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     setFormData(prev => ({ 
       ...prev, 
       category: newCategory,
-      houseSubtype: newCategory === 'houses' ? HOUSE_SUBTYPES[0] : undefined // Сброс или установка подкатегории
+      houseSubtype: newCategory === 'houses' ? HOUSE_SUBTYPES[0] : undefined, // Сброс или установка подкатегории
+      locationType: newCategory === 'houses' ? 'inCity' : undefined, // Сброс или установка типа местоположения
+      distanceFromCityKm: newCategory === 'houses' ? undefined : undefined // Сброс расстояния
+    }));
+  };
+
+  const handleLocationTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newLocationType = e.target.value === 'В городе' ? 'inCity' : 'outsideCity';
+    setFormData(prev => ({ 
+      ...prev, 
+      locationType: newLocationType,
+      distanceFromCityKm: newLocationType === 'inCity' ? undefined : prev.distanceFromCityKm // Сброс расстояния, если "В городе"
     }));
   };
 
@@ -240,7 +256,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
               >
                 <option value="apartments">Квартиры</option>
                 <option value="cottage">Коттеджи</option>
-                <option value="houses">Дома</option> {/* Изменено с 'townhouse' на 'houses' */}
+                <option value="houses">Дома</option>
                 <option value="commercial">Коммерция</option>
                 <option value="land">Земельные участки</option>
               </select>
@@ -308,7 +324,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="space-y-2">
                   <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Площадь земли (сот.)</label>
-                  <input type="number" name="landArea" value={formData.landArea || 0} onChange={handleChange} className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold" />
+                  <input type="number" name="landArea" value={formData.landArea || ''} onChange={handleChange} className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Тип земли</label>
@@ -394,6 +410,36 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
               </div>
             )}
             
+            {isHouses && ( // New location fields for 'houses' category
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Расположение</label>
+                  <select 
+                    name="locationType"
+                    value={formData.locationType === 'inCity' ? 'В городе' : 'За городом'}
+                    onChange={handleLocationTypeChange}
+                    className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
+                  >
+                    <option value="В городе">В городе</option>
+                    <option value="За городом">За городом</option>
+                  </select>
+                </div>
+                {formData.locationType === 'outsideCity' && (
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Расстояние от города (км)</label>
+                    <input 
+                      type="number"
+                      name="distanceFromCityKm"
+                      value={formData.distanceFromCityKm || ''}
+                      onChange={handleChange}
+                      placeholder="Например, 10"
+                      className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
             {!isLand && (
               <div className="flex flex-wrap gap-10 py-4">
                 <label className="flex items-center gap-4 cursor-pointer group">

@@ -35,10 +35,12 @@ export const INFRA_OPTIONS = [
 
 export const HOUSE_SUBTYPES = ['Таунхаус', 'Дуплекс']; // Новые подкатегории для домов
 
+export const LOCATION_TYPES = ['В городе', 'За городом']; // Новые типы местоположения
+
 export const CATEGORIES: Array<{ id: PropertyCategory; label: string }> = [
   { id: 'apartments', label: 'Квартиры' },
   { id: 'cottage', label: 'Коттеджи' },
-  { id: 'houses', label: 'Дома' }, // Изменено с 'townhouse' на 'houses'
+  { id: 'houses', label: 'Дома' },
   { id: 'commercial', label: 'Коммерция' },
   { id: 'land', label: 'Земельные участки' },
 ];

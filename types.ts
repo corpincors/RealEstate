@@ -27,6 +27,8 @@ export interface Property {
   isEOselya: boolean;
   landType?: string;
   houseSubtype?: 'Таунхаус' | 'Дуплекс'; // Новое поле для подкатегории домов
+  locationType?: 'inCity' | 'outsideCity'; // Новое поле для типа местоположения
+  distanceFromCityKm?: number; // Новое поле для расстояния от города
   description: string;
   imageUrls: string[];
   publicLink?: string; // Added field for the public client link
@@ -58,6 +60,9 @@ export interface FilterState {
   minLandArea: string;
   maxLandArea: string;
   houseSubtype: string; // Добавлено поле для фильтрации по подкатегории домов
+  locationType: string; // Добавлено поле для фильтрации по типу местоположения
+  minDistanceFromCityKm: string; // Добавлено поле для фильтрации по мин. расстоянию от города
+  maxDistanceFromCityKm: string; // Добавлено поле для фильтрации по макс. расстоянию от города
   tech: string[];
   comfort: string[];
   comm: string[];

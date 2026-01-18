@@ -4,7 +4,7 @@ import { Property, FilterState, PropertyCategory } from './types';
 import { 
   ROOMS_OPTIONS, LAND_TYPES, HOUSE_TYPES, 
   REPAIR_TYPES, HOUSING_CLASSES, HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, 
-  COMM_OPTIONS, INFRA_OPTIONS, CATEGORIES, INITIAL_DISTRICTS, HOUSE_SUBTYPES
+  COMM_OPTIONS, INFRA_OPTIONS, CATEGORIES, INITIAL_DISTRICTS, HOUSE_SUBTYPES, LOCATION_TYPES
 } from './constants.tsx';
 import { PlusCircle, Search, Plus, Home, LogOut, ChevronDown, Users } from './components/Icons';
 import PropertyCard from './components/PropertyCard';
@@ -126,6 +126,9 @@ const App: React.FC = () => {
     minLandArea: '',
     maxLandArea: '',
     houseSubtype: 'Любой', // Добавлено новое поле фильтра
+    locationType: 'Любой', // Инициализация нового поля
+    minDistanceFromCityKm: '', // Инициализация нового поля
+    maxDistanceFromCityKm: '', // Инициализация нового поля
     tech: [],
     comfort: [],
     comm: [],
@@ -174,6 +177,18 @@ const App: React.FC = () => {
 
         // New filter for houseSubtype
         if (filters.category === 'houses' && filters.houseSubtype !== 'Любой' && p.houseSubtype !== filters.houseSubtype) return false;
+        
+        // New filters for locationType and distanceFromCityKm
+        if (filters.category === 'houses') {
+          if (filters.locationType !== 'Любой') {
+            if (filters.locationType === 'В городе' && p.locationType !== 'inCity') return false;
+            if (filters.locationType === 'За городом' && p.locationType !== 'outsideCity') return false;
+          }
+          if (filters.locationType === 'За городом') {
+            if (filters.minDistanceFromCityKm && (p.distanceFromCityKm || 0) < Number(filters.minDistanceFromCityKm)) return false;
+            if (filters.maxDistanceFromCityKm && (p.distanceFromCityKm || 0) > Number(filters.maxDistanceFromCityKm)) return false;
+          }
+        }
 
         if (filters.tech.length > 0 && !filters.tech.every((f: string) => p.tech.includes(f))) return false;
         if (filters.comfort.length > 0 && !filters.comfort.every((f: string) => p.comfort.includes(f))) return false;
@@ -235,6 +250,9 @@ const App: React.FC = () => {
       hasFurniture: null, hasRepair: null, repairType: 'Любой', heating: 'Любой',
       isEOselya: null, landType: 'Любой', minLandArea: '', maxLandArea: '',
       houseSubtype: 'Любой', // Сброс нового поля
+      locationType: 'Любой', // Сброс нового поля
+      minDistanceFromCityKm: '', // Сброс нового поля
+      maxDistanceFromCityKm: '', // Сброс нового поля
       tech: [], comfort: [], comm: [], infra: [],
       keywords: '',
     });
@@ -332,7 +350,14 @@ const App: React.FC = () => {
                       {CATEGORIES.map((cat) => (
                         <button
                           key={cat.id}
-                          onClick={() => setFilters(prev => ({ ...prev, category: cat.id as PropertyCategory, houseSubtype: 'Любой' }))} // Reset houseSubtype on category change
+                          onClick={() => setFilters(prev => ({ 
+                            ...prev, 
+                            category: cat.id as PropertyCategory, 
+                            houseSubtype: 'Любой', // Reset houseSubtype on category change
+                            locationType: 'Любой', // Reset locationType on category change
+                            minDistanceFromCityKm: '', // Reset distance on category change
+                            maxDistanceFromCityKm: '' // Reset distance on category change
+                          }))} 
                           className={`px-8 py-3.5 rounded-full font-black text-xs uppercase tracking-widest transition-all ${
                             filters.category === cat.id ? 'bg-white text-blue-600 shadow-xl' : 'text-slate-400 hover:text-slate-600'
                           }`}
@@ -474,6 +499,31 @@ const App: React.FC = () => {
                                 {HEATING_OPTIONS.map((h: string) => <option key={h} value={h}>{h}</option>)}
                               </select>
                             </div>
+                          </div>
+                        )}
+
+                        {isHouses && ( // New location filters for 'houses' category
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-10">
+                            <div className="space-y-3">
+                              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Расположение</label>
+                              <select 
+                                value={filters.locationType}
+                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, locationType: e.target.value})}
+                                className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
+                              >
+                                <option value="Любой">Любое</option>
+                                {LOCATION_TYPES.map((t: string) => <option key={t} value={t}>{t}</option>)}
+                              </select>
+                            </div>
+                            {filters.locationType === 'За городом' && (
+                              <div className="space-y-3 lg:col-span-2">
+                                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Расстояние от города (км)</label>
+                                <div className="flex gap-2">
+                                  <input type="number" placeholder="От" value={filters.minDistanceFromCityKm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters({...filters, minDistanceFromCityKm: e.target.value})} className="w-1/2 bg-slate-50 rounded-2xl p-4 text-sm font-bold outline-none" />
+                                  <input type="number" placeholder="До" value={filters.maxDistanceFromCityKm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters({...filters, maxDistanceFromCityKm: e.target.value})} className="w-1/2 bg-slate-50 rounded-2xl p-4 text-sm font-bold outline-none" />
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
 

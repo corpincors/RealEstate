@@ -137,7 +137,16 @@ const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({ properties }) =
             <ul className="space-y-3 text-sm font-medium text-slate-700">
               <li className="flex justify-between"><span>Категория:</span> <span className="font-semibold">{categoryLabel}</span></li>
               {property.category === 'houses' && (
-                <li className="flex justify-between"><span>Подкатегория:</span> <span className="font-semibold">{property.houseSubtype || '—'}</span></li>
+                <>
+                  <li className="flex justify-between"><span>Подкатегория:</span> <span className="font-semibold">{property.houseSubtype || '—'}</span></li>
+                  <li className="flex justify-between">
+                    <span>Расположение:</span> 
+                    <span className="font-semibold">
+                      {property.locationType === 'inCity' ? 'В городе' : 
+                       property.locationType === 'outsideCity' && property.distanceFromCityKm !== undefined ? `${property.distanceFromCityKm} км от города` : '—'}
+                    </span>
+                  </li>
+                </>
               )}
               {property.category !== 'land' && (
                 <>
