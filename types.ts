@@ -65,6 +65,7 @@ export interface FilterState {
 
 export interface Client {
   id: string;
+  clientName?: string; // Добавлено поле для имени клиента
   phoneNumber: string;
   lastCalled: string; // ISO date string
   request: string;

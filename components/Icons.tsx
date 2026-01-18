@@ -18,10 +18,11 @@ import {
   Camera,
   Trash2,
   LogOut,
-  Users, // Добавлена иконка Users
-  MessageSquare, // Добавлена иконка MessageSquare
-  Calendar, // Добавлена иконка Calendar
-  Edit // Добавлена иконка Edit
+  Users, 
+  MessageSquare, 
+  Calendar, 
+  Edit,
+  User // Добавлена иконка User
 } from 'lucide-react';
 
 export {
@@ -44,8 +45,9 @@ export {
   Camera,
   Trash2,
   LogOut,
-  Users, // Экспортирована иконка Users
-  MessageSquare, // Экспортирована иконка MessageSquare
-  Calendar, // Экспортирована иконка Calendar
-  Edit // Экспортирована иконка Edit
+  Users, 
+  MessageSquare, 
+  Calendar, 
+  Edit,
+  User // Экспортирована иконка User
 };

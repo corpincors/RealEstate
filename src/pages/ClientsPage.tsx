@@ -115,7 +115,12 @@ const ClientsPage: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          {/* The 'Объекты' link is now in App.tsx header */}
+          <Link
+            to="/"
+            className="px-6 py-3 rounded-xl font-bold flex items-center gap-3 text-xs transition-all active:scale-95 bg-slate-100 hover:bg-slate-200 text-slate-600"
+          >
+            Объекты
+          </Link>
           <button
             onClick={openAddModal}
             className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 shadow-xl shadow-blue-100 transition-all active:scale-95"
@@ -136,6 +141,9 @@ const ClientsPage: React.FC = () => {
               <thead className="bg-slate-50">
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-black text-slate-400 uppercase tracking-wider rounded-tl-2xl">
+                    Имя клиента
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-black text-slate-400 uppercase tracking-wider">
                     Номер телефона
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-black text-slate-400 uppercase tracking-wider">
@@ -152,13 +160,16 @@ const ClientsPage: React.FC = () => {
               <tbody className="bg-white divide-y divide-slate-100">
                 {clients.map((client: Client) => (
                   <tr key={client.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 text-sm font-bold text-slate-900">
+                      {client.clientName || '—'}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900">
                       {client.phoneNumber}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
                       {formatDateTime(client.lastCalled)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-600 max-w-xs truncate">
+                    <td className="px-6 py-4 text-sm text-slate-600 max-w-xs"> {/* Removed whitespace-nowrap and truncate */}
                       {client.request}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

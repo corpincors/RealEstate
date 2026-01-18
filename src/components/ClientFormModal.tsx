@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Client } from '../../types';
-import { X, Phone, MessageSquare, Calendar } from '../../components/Icons';
+import { X, Phone, MessageSquare, Calendar, User } from '../../components/Icons'; // Import User icon
 
 interface ClientFormModalProps {
   isOpen: boolean;
@@ -18,6 +18,7 @@ const ClientFormModal: React.FC<ClientFormModalProps> = ({
   editingClient,
 }) => {
   const [formData, setFormData] = useState<Partial<Client>>({
+    clientName: '', // Initialize clientName
     phoneNumber: '',
     lastCalled: new Date().toISOString(),
     request: '',
@@ -28,6 +29,7 @@ const ClientFormModal: React.FC<ClientFormModalProps> = ({
       setFormData(editingClient);
     } else if (isOpen) {
       setFormData({
+        clientName: '', // Reset clientName for new client
         phoneNumber: '',
         lastCalled: new Date().toISOString(),
         request: '',
@@ -85,6 +87,21 @@ const ClientFormModal: React.FC<ClientFormModalProps> = ({
 
         <form onSubmit={handleSubmit} className="p-10 space-y-8">
           <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Имя клиента</label>
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-300" />
+                <input
+                  type="text"
+                  name="clientName"
+                  value={formData.clientName}
+                  onChange={handleChange}
+                  placeholder="Имя Фамилия"
+                  className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 pl-12 outline-none font-bold text-slate-700 transition shadow-sm"
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Номер телефона</label>
               <div className="relative">
