@@ -33,10 +33,12 @@ export const INFRA_OPTIONS = [
   'Ресторан, кафе', 'Отделение почты', 'Отделение банка, банкомат'
 ];
 
+export const HOUSE_SUBTYPES = ['Таунхаус', 'Дуплекс']; // Новые подкатегории для домов
+
 export const CATEGORIES: Array<{ id: PropertyCategory; label: string }> = [
   { id: 'apartments', label: 'Квартиры' },
   { id: 'cottage', label: 'Коттеджи' },
-  { id: 'townhouse', label: 'Таунхаусы' },
+  { id: 'houses', label: 'Дома' }, // Изменено с 'townhouse' на 'houses'
   { id: 'commercial', label: 'Коммерция' },
   { id: 'land', label: 'Земельные участки' },
 ];

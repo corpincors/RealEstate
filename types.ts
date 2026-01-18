@@ -1,4 +1,4 @@
-export type PropertyCategory = 'apartments' | 'cottage' | 'townhouse' | 'commercial' | 'land';
+export type PropertyCategory = 'apartments' | 'cottage' | 'houses' | 'commercial' | 'land';
 
 export interface Property {
   id: string;
@@ -26,6 +26,7 @@ export interface Property {
   infra: string[];
   isEOselya: boolean;
   landType?: string;
+  houseSubtype?: 'Таунхаус' | 'Дуплекс'; // Новое поле для подкатегории домов
   description: string;
   imageUrls: string[];
   publicLink?: string; // Added field for the public client link
@@ -56,6 +57,7 @@ export interface FilterState {
   landType: string;
   minLandArea: string;
   maxLandArea: string;
+  houseSubtype: string; // Добавлено поле для фильтрации по подкатегории домов
   tech: string[];
   comfort: string[];
   comm: string[];

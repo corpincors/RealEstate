@@ -78,6 +78,13 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onEdit, onDelete,
     }
   };
 
+  const getCategoryTag = () => {
+    if (property.category === 'land') return 'Участок';
+    if (property.category === 'houses') return property.houseSubtype || 'Дома'; // Display subtype for houses
+    if (property.type === 'New Build') return 'Новостройка';
+    return 'Вторичка';
+  };
+
   return (
     <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 group border border-slate-100 flex flex-col h-full">
       <div className="h-72 relative overflow-hidden shrink-0">
@@ -110,7 +117,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onEdit, onDelete,
             <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg">єОселя</span>
           )}
           <span className="bg-white/90 backdrop-blur-md text-slate-900 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg">
-            {property.category === 'land' ? 'Участок' : property.type === 'New Build' ? 'Новостройка' : 'Вторичка'}
+            {getCategoryTag()}
           </span>
           {property.hasRepair && property.repairType !== 'Без ремонта' && (
             <span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg">

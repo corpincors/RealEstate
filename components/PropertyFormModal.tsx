@@ -6,7 +6,7 @@ import SingleSelectWithDelete from './SingleSelectWithDelete';
 import { 
   LAND_TYPES, HOUSE_TYPES, REPAIR_TYPES, HOUSING_CLASSES,
   HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, COMM_OPTIONS, INFRA_OPTIONS,
-  INITIAL_DISTRICTS
+  INITIAL_DISTRICTS, HOUSE_SUBTYPES
 } from '../constants.tsx';
 
 interface PropertyFormModalProps {
@@ -48,7 +48,8 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     infra: [],
     isEOselya: false,
     description: '',
-    imageUrls: []
+    imageUrls: [],
+    houseSubtype: HOUSE_SUBTYPES[0] // Инициализация нового поля
   });
 
   useEffect(() => {
@@ -76,7 +77,8 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
         infra: [],
         isEOselya: false,
         description: '',
-        imageUrls: []
+        imageUrls: [],
+        houseSubtype: HOUSE_SUBTYPES[0] // Сброс для нового объекта
       });
     }
   }, [editingProperty, isOpen]);
@@ -96,6 +98,15 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     }
     
     setFormData(prev => ({ ...prev, [name]: val }));
+  };
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCategory = e.target.value;
+    setFormData(prev => ({ 
+      ...prev, 
+      category: newCategory,
+      houseSubtype: newCategory === 'houses' ? HOUSE_SUBTYPES[0] : undefined // Сброс или установка подкатегории
+    }));
   };
 
   const handleDistrictChange = (value: string) => {
@@ -156,6 +167,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
   };
 
   const isLand = formData.category === 'land';
+  const isHouses = formData.category === 'houses';
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[200] flex items-center justify-center p-4">
@@ -223,12 +235,12 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
               <select 
                 name="category"
                 value={formData.category}
-                onChange={handleChange}
+                onChange={handleCategoryChange} // Используем новый обработчик
                 className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
               >
                 <option value="apartments">Квартиры</option>
                 <option value="cottage">Коттеджи</option>
-                <option value="townhouse">Таунхаусы</option>
+                <option value="houses">Дома</option> {/* Изменено с 'townhouse' на 'houses' */}
                 <option value="commercial">Коммерция</option>
                 <option value="land">Земельные участки</option>
               </select>
@@ -315,6 +327,19 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                     <option value="Construction">Строящийся</option>
                   </select>
                 </div>
+                {isHouses && ( // Поле для подкатегории домов
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Подкатегория</label>
+                    <select 
+                      name="houseSubtype" 
+                      value={formData.houseSubtype || ''} 
+                      onChange={handleChange} 
+                      className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold"
+                    >
+                      {HOUSE_SUBTYPES.map((t: string) => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                )}
                 <div className="space-y-2">
                   <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Комнат</label>
                   <input 

@@ -47,6 +47,13 @@ const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({ properties }) =
     setCurrentImg((prev: number) => (prev - 1 + property.imageUrls.length) % property.imageUrls.length);
   };
 
+  const getCategoryDisplay = () => {
+    if (property.category === 'land') return 'Участок';
+    if (property.category === 'houses') return property.houseSubtype || 'Дома';
+    if (property.type === 'New Build') return 'Новостройка';
+    return 'Вторичка';
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="flex items-center justify-between mb-8">
@@ -103,7 +110,7 @@ const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({ properties }) =
                 <span className="bg-blue-600 text-white px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">єОселя</span>
               )}
               <span className="bg-white/90 backdrop-blur-md text-slate-900 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
-                {property.category === 'land' ? 'Участок' : property.type === 'New Build' ? 'Новостройка' : 'Вторичка'}
+                {getCategoryDisplay()}
               </span>
             </div>
           </div>
@@ -129,6 +136,9 @@ const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({ properties }) =
             <h3 className="text-lg font-black text-slate-900 uppercase tracking-widest">Основные характеристики</h3>
             <ul className="space-y-3 text-sm font-medium text-slate-700">
               <li className="flex justify-between"><span>Категория:</span> <span className="font-semibold">{categoryLabel}</span></li>
+              {property.category === 'houses' && (
+                <li className="flex justify-between"><span>Подкатегория:</span> <span className="font-semibold">{property.houseSubtype || '—'}</span></li>
+              )}
               {property.category !== 'land' && (
                 <>
                   <li className="flex justify-between"><span>Тип:</span> <span className="font-semibold">{property.type}</span></li>

@@ -37,13 +37,5 @@
       "publicLink": "http://192.168.5.102:3000/property/01xgo3dka?clientMode=true"
     }
   ],
-  "clients": [
-    {
-      "id": "fl8l8hz9g",
-      "clientName": "Вася",
-      "phoneNumber": "38099102923",
-      "lastCalled": "2026-01-18T22:55:25.969Z",
-      "request": "мвымсьывлдавыа"
-    }
-  ]
+  "clients": []
 }
