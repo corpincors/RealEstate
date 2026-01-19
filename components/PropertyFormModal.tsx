@@ -6,7 +6,7 @@ import SingleSelectWithDelete from './SingleSelectWithDelete';
 import { 
   LAND_TYPES, HOUSE_TYPES, REPAIR_TYPES, HOUSING_CLASSES,
   HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, COMM_OPTIONS, INFRA_OPTIONS,
-  INITIAL_DISTRICTS, HOUSE_TYPES_EXTENDED // Удален LOCATION_TYPES
+  INITIAL_DISTRICTS, HOUSE_TYPES_EXTENDED
 } from '../constants.tsx';
 
 interface PropertyFormModalProps {
@@ -245,13 +245,13 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
           </section>
 
           {/* BASIC INFO */}
-          <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="space-y-2">
               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Категория</label>
               <select 
                 name="category"
                 value={formData.category}
-                onChange={handleCategoryChange} // Используем новый обработчик
+                onChange={handleCategoryChange}
                 className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
               >
                 <option value="apartments">Квартиры</option>
@@ -261,19 +261,34 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
               </select>
             </div>
 
-            {isHouses && ( // New location fields for 'houses' category
-              <div className="space-y-2">
-                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Расположение</label>
-                <select 
-                  name="locationType"
-                  value={formData.locationType === 'inCity' ? 'В городе' : 'За городом'}
-                  onChange={handleLocationTypeChange}
-                  className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
-                >
-                  <option value="В городе">В городе</option>
-                  <option value="За городом">За городом</option>
-                </select>
-              </div>
+            {isHouses && (
+              <>
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Расположение</label>
+                  <select 
+                    name="locationType"
+                    value={formData.locationType === 'inCity' ? 'В городе' : 'За городом'}
+                    onChange={handleLocationTypeChange}
+                    className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
+                  >
+                    <option value="В городе">В городе</option>
+                    <option value="За городом">За городом</option>
+                  </select>
+                </div>
+                {formData.locationType === 'outsideCity' && (
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Расстояние от города (км)</label>
+                    <input 
+                      type="number"
+                      name="distanceFromCityKm"
+                      value={formData.distanceFromCityKm || ''}
+                      onChange={handleChange}
+                      placeholder="Например, 10"
+                      className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
+                    />
+                  </div>
+                )}
+              </>
             )}
 
             <SingleSelectWithDelete
@@ -424,21 +439,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
               </div>
             )}
             
-            {formData.locationType === 'outsideCity' && isHouses && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-2">
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Расстояние от города (км)</label>
-                  <input 
-                    type="number"
-                    name="distanceFromCityKm"
-                    value={formData.distanceFromCityKm || ''}
-                    onChange={handleChange}
-                    placeholder="Например, 10"
-                    className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
-                  />
-                </div>
-              </div>
-            )}
+            {/* Удален дублирующийся блок с расположением и расстоянием */}
 
             {!isLand && (
               <div className="flex flex-wrap gap-10 py-4">
