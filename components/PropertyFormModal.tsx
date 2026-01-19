@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Property } from '../types';
 import { X, Home, Layers, Camera, Plus, Phone } from './Icons';
-import MultiSelect from './MultiSelect';
+// import MultiSelect from './MultiSelect'; // Удален неиспользуемый импорт
+import EditableMultiSelect from './EditableMultiSelect'; // Импортируем новый компонент
 import SingleSelectWithDelete from './SingleSelectWithDelete';
 import { 
   LAND_TYPES, REPAIR_TYPES, HOUSING_CLASSES,
@@ -21,7 +22,7 @@ interface PropertyFormModalProps {
   availableHeatingOptions: string[];
   availableYearBuiltOptions: string[];
   availableWallTypeOptions: string[];
-  availableBathroomOptions: string[]; // Добавлено
+  availableBathroomOptions: string[];
 }
 
 const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ 
@@ -36,7 +37,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
   availableHeatingOptions,
   availableYearBuiltOptions,
   availableWallTypeOptions,
-  availableBathroomOptions, // Добавлено
+  availableBathroomOptions,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<Partial<Property>>({
@@ -67,7 +68,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     cadastralNumber: '',
     yearBuilt: '',
     wallType: '',
-    bathroomType: BATHROOM_OPTIONS[0], // Инициализация нового поля
+    bathroomType: BATHROOM_OPTIONS[0],
   });
 
   useEffect(() => {
@@ -102,7 +103,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
         cadastralNumber: '',
         yearBuilt: '',
         wallType: '',
-        bathroomType: BATHROOM_OPTIONS[0], // Сброс для нового объекта
+        bathroomType: BATHROOM_OPTIONS[0],
       });
     }
   }, [editingProperty, isOpen]);
@@ -137,7 +138,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
       cadastralNumber: newCategory === 'houses' ? '' : undefined,
       yearBuilt: newCategory === 'land' ? undefined : '',
       wallType: newCategory === 'land' ? undefined : '',
-      bathroomType: newCategory === 'land' ? undefined : BATHROOM_OPTIONS[0], // Сброс для земли
+      bathroomType: newCategory === 'land' ? undefined : BATHROOM_OPTIONS[0],
     }));
   };
 
@@ -584,31 +585,31 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <MultiSelect 
+                <EditableMultiSelect 
                   label="Бытовая техника" 
                   prefix="Выбрано" 
-                  options={TECH_OPTIONS} 
+                  initialOptions={TECH_OPTIONS} // Передаем предопределенные опции
                   selected={formData.tech || []} 
                   onChange={(s: string[]) => setFormData(p => ({...p, tech: s}))} 
                 />
-                <MultiSelect 
+                <EditableMultiSelect 
                   label="Комфорт" 
                   prefix="Выбрано" 
-                  options={COMFORT_OPTIONS} 
+                  initialOptions={COMFORT_OPTIONS} // Передаем предопределенные опции
                   selected={formData.comfort || []} 
                   onChange={(s: string[]) => setFormData(p => ({...p, comfort: s}))} 
                 />
-                <MultiSelect 
+                <EditableMultiSelect 
                   label="Коммуникации" 
                   prefix="Выбрано" 
-                  options={COMM_OPTIONS} 
+                  initialOptions={COMM_OPTIONS} // Передаем предопределенные опции
                   selected={formData.comm || []} 
                   onChange={(s: string[]) => setFormData(p => ({...p, comm: s}))} 
                 />
-                <MultiSelect 
+                <EditableMultiSelect 
                   label="Инфраструктура" 
                   prefix="Выбрано" 
-                  options={INFRA_OPTIONS} 
+                  initialOptions={INFRA_OPTIONS} // Передаем предопределенные опции
                   selected={formData.infra || []} 
                   onChange={(s: string[]) => setFormData(p => ({...p, infra: s}))} 
                 />
