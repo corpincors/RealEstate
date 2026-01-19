@@ -142,7 +142,7 @@ const App: React.FC = () => {
     return Array.from(new Set(combined.filter(v => typeof v === 'string' && v.trim() !== ''))).sort();
   }, [properties]);
 
-  // Динамические списки опций для SingleSelectWithDelete
+  // Dynamic option lists for SingleSelectWithDelete
   const availableDistricts = useMemo(() => getUniqueOptions(INITIAL_DISTRICTS, customOptions.districts, 'district'), [getUniqueOptions, customOptions.districts]);
   const availableHousingClasses = useMemo(() => getUniqueOptions(HOUSING_CLASSES, customOptions.housingClasses, 'housingClass'), [getUniqueOptions, customOptions.housingClasses]);
   const availableRepairTypes = useMemo(() => getUniqueOptions(REPAIR_TYPES, customOptions.repairTypes, 'repairType'), [getUniqueOptions, customOptions.repairTypes]);
@@ -151,14 +151,14 @@ const App: React.FC = () => {
   const availableWallTypeOptions = useMemo(() => getUniqueOptions(WALL_TYPE_OPTIONS, customOptions.wallTypeOptions, 'wallType'), [getUniqueOptions, customOptions.wallTypeOptions]);
   const availableBathroomOptions = useMemo(() => getUniqueOptions(BATHROOM_OPTIONS, customOptions.bathroomOptions, 'bathroomType'), [getUniqueOptions, customOptions.bathroomOptions]);
 
-  // Динамические списки опций для EditableMultiSelect (для фильтров и формы)
+  // Dynamic option lists for EditableMultiSelect (for filters and form)
   const availableTechOptions = useMemo(() => getUniqueOptions(TECH_OPTIONS, customOptions.techOptions, 'tech'), [getUniqueOptions, customOptions.techOptions]);
   const availableComfortOptions = useMemo(() => getUniqueOptions(COMFORT_OPTIONS, customOptions.comfortOptions, 'comfort'), [getUniqueOptions, customOptions.comfortOptions]);
   const availableCommOptions = useMemo(() => getUniqueOptions(COMM_OPTIONS, customOptions.commOptions, 'comm'), [getUniqueOptions, customOptions.commOptions]);
   const availableInfraOptions = useMemo(() => getUniqueOptions(INFRA_OPTIONS, customOptions.infraOptions, 'infra'), [getUniqueOptions, customOptions.infraOptions]);
 
 
-  // Функции для добавления пользовательских опций
+  // Functions to add custom options
   const handleAddCustomOption = useCallback((category: keyof typeof customOptions, option: string) => {
     setCustomOptions(prev => {
       const updatedCategory = Array.from(new Set([...prev[category], option])).sort();
@@ -168,7 +168,7 @@ const App: React.FC = () => {
     });
   }, [updateCustomOptionsOnServer]);
 
-  // Функции для удаления пользовательских опций
+  // Functions to remove custom options
   const handleRemoveCustomOption = useCallback((category: keyof typeof customOptions, optionToRemove: string, initialConstants: string[]) => {
     if (initialConstants.includes(optionToRemove)) {
       showError(`Нельзя удалить предопределенную опцию "${optionToRemove}".`);
@@ -821,7 +821,7 @@ const App: React.FC = () => {
         onAddCustomBathroomOption={(option: string) => handleAddCustomOption('bathroomOptions', option)}
         onRemoveCustomBathroomOption={(option: string) => handleRemoveCustomOption('bathroomOptions', option, BATHROOM_OPTIONS)}
 
-        availableTechOptions={availableTechOptions}
+        availableTechOptions={availableTechOptions} 
         onAddCustomTechOption={(option: string) => handleAddCustomOption('techOptions', option)}
         onRemoveCustomTechOption={(option: string) => handleRemoveCustomOption('techOptions', option, TECH_OPTIONS)} 
         availableComfortOptions={availableComfortOptions}

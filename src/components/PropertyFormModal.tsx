@@ -4,8 +4,8 @@ import { X, Home, Layers, Camera, Plus, Phone } from '../../components/Icons';
 import EditableMultiSelect from '../../components/EditableMultiSelect';
 import EditableSingleSelect from '../../components/EditableSingleSelect';
 import { 
-  LAND_TYPES, // LAND_TYPES остается, так как используется напрямую
-  HOUSE_TYPES_EXTENDED // HOUSE_TYPES_EXTENDED остается, так как используется напрямую
+  LAND_TYPES, // LAND_TYPES remains, as it is used directly
+  HOUSE_TYPES_EXTENDED // HOUSE_TYPES_EXTENDED remains, as it is used directly
 } from '../../constants.tsx';
 
 interface PropertyFormModalProps {
@@ -42,6 +42,7 @@ interface PropertyFormModalProps {
   onAddCustomBathroomOption: (option: string) => void;
   onRemoveCustomBathroomOption: (option: string) => void;
 
+  // These props are correctly defined in the interface
   availableTechOptions: string[]; 
   onAddCustomTechOption: (option: string) => void;
   onRemoveCustomTechOption: (option: string) => void; 
