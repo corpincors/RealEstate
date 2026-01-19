@@ -4,9 +4,8 @@ import { X, Home, Layers, Camera, Plus, Phone } from '../../components/Icons';
 import EditableMultiSelect from '../../components/EditableMultiSelect';
 import EditableSingleSelect from '../../components/EditableSingleSelect';
 import { 
-  LAND_TYPES, REPAIR_TYPES, HOUSING_CLASSES,
-  HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, COMM_OPTIONS, INFRA_OPTIONS, // Import constants for multi-selects
-  HOUSE_TYPES_EXTENDED, YEAR_BUILT_OPTIONS, WALL_TYPE_OPTIONS, BATHROOM_OPTIONS
+  LAND_TYPES, // LAND_TYPES остается, так как используется напрямую
+  HOUSE_TYPES_EXTENDED // HOUSE_TYPES_EXTENDED остается, так как используется напрямую
 } from '../../constants.tsx';
 
 interface PropertyFormModalProps {
@@ -43,7 +42,6 @@ interface PropertyFormModalProps {
   onAddCustomBathroomOption: (option: string) => void;
   onRemoveCustomBathroomOption: (option: string) => void;
 
-  // Добавлены пропсы для EditableMultiSelect
   availableTechOptions: string[]; 
   onAddCustomTechOption: (option: string) => void;
   onRemoveCustomTechOption: (option: string) => void; 
@@ -107,11 +105,11 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     ownerPhone: '',
     totalArea: 0,
     rooms: '1',
-    housingClass: HOUSING_CLASSES[0], 
+    housingClass: '', 
     hasFurniture: false,
     hasRepair: false,
-    repairType: REPAIR_TYPES[0],
-    heating: HEATING_OPTIONS[0],
+    repairType: '', 
+    heating: '', 
     tech: [],
     comfort: [],
     comm: [],
@@ -124,9 +122,9 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     distanceFromCityKm: undefined,
     plotArea: undefined,
     cadastralNumber: '',
-    yearBuilt: YEAR_BUILT_OPTIONS[0], 
-    wallType: WALL_TYPE_OPTIONS[0],   
-    bathroomType: BATHROOM_OPTIONS[0], 
+    yearBuilt: '', 
+    wallType: '',   
+    bathroomType: '', 
   });
 
   useEffect(() => {
@@ -142,11 +140,11 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
         ownerPhone: '',
         totalArea: 0,
         rooms: '1',
-        housingClass: availableHousingClasses[0] || HOUSING_CLASSES[0],
+        housingClass: availableHousingClasses[0] || '', 
         hasFurniture: false,
         hasRepair: false,
-        repairType: availableRepairTypes[0] || REPAIR_TYPES[0],
-        heating: availableHeatingOptions[0] || HEATING_OPTIONS[0],
+        repairType: availableRepairTypes[0] || '', 
+        heating: availableHeatingOptions[0] || '', 
         tech: [],
         comfort: [],
         comm: [],
@@ -159,9 +157,9 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
         distanceFromCityKm: undefined,
         plotArea: undefined,
         cadastralNumber: '',
-        yearBuilt: availableYearBuiltOptions[0] || YEAR_BUILT_OPTIONS[0],
-        wallType: availableWallTypeOptions[0] || WALL_TYPE_OPTIONS[0],
-        bathroomType: availableBathroomOptions[0] || BATHROOM_OPTIONS[0],
+        yearBuilt: availableYearBuiltOptions[0] || '', 
+        wallType: availableWallTypeOptions[0] || '',   
+        bathroomType: availableBathroomOptions[0] || '', 
       });
     }
   }, [editingProperty, isOpen, 
@@ -198,9 +196,9 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
       distanceFromCityKm: newCategory === 'houses' ? undefined : undefined,
       plotArea: newCategory === 'houses' ? undefined : undefined,
       cadastralNumber: newCategory === 'houses' ? '' : undefined,
-      yearBuilt: newCategory === 'land' ? undefined : (availableYearBuiltOptions[0] || YEAR_BUILT_OPTIONS[0]),
-      wallType: newCategory === 'land' ? undefined : (availableWallTypeOptions[0] || WALL_TYPE_OPTIONS[0]),
-      bathroomType: newCategory === 'land' ? undefined : (availableBathroomOptions[0] || BATHROOM_OPTIONS[0]),
+      yearBuilt: newCategory === 'land' ? undefined : (availableYearBuiltOptions[0] || ''),
+      wallType: newCategory === 'land' ? undefined : (availableWallTypeOptions[0] || ''),
+      bathroomType: newCategory === 'land' ? undefined : (availableBathroomOptions[0] || ''),
     }));
   };
 
@@ -649,7 +647,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                   label="Бытовая техника" 
                   prefix="Т" 
                   initialOptions={availableTechOptions}
-                  constantOptions={TECH_OPTIONS} 
+                  constantOptions={[]} 
                   selected={formData.tech || []} 
                   onChange={(s: string[]) => setFormData((p: Partial<Property>) => ({...p, tech: s}))} 
                   onAddCustomOption={onAddCustomTechOption}
@@ -659,7 +657,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                   label="Комфорт" 
                   prefix="К" 
                   initialOptions={availableComfortOptions}
-                  constantOptions={COMFORT_OPTIONS} 
+                  constantOptions={[]} 
                   selected={formData.comfort || []} 
                   onChange={(s: string[]) => setFormData((p: Partial<Property>) => ({...p, comfort: s}))} 
                   onAddCustomOption={onAddCustomComfortOption}
@@ -669,7 +667,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                   label="Коммуникации" 
                   prefix="К" 
                   initialOptions={availableCommOptions}
-                  constantOptions={COMM_OPTIONS} 
+                  constantOptions={[]} 
                   selected={formData.comm || []} 
                   onChange={(s: string[]) => setFormData((p: Partial<Property>) => ({...p, comm: s}))} 
                   onAddCustomOption={onAddCustomCommOption}
@@ -679,7 +677,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                   label="Инфраструктура" 
                   prefix="И" 
                   initialOptions={availableInfraOptions}
-                  constantOptions={INFRA_OPTIONS} 
+                  constantOptions={[]} 
                   selected={formData.infra || []} 
                   onChange={(s: string[]) => setFormData((p: Partial<Property>) => ({...p, infra: s}))} 
                   onAddCustomOption={onAddCustomInfraOption}
