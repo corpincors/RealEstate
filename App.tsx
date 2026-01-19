@@ -365,6 +365,31 @@ const App: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-10">
+                      {isHouses && ( // Moved "Расположение" here
+                        <div className="space-y-3">
+                          <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Расположение</label>
+                          <select 
+                            value={filters.locationType}
+                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, locationType: e.target.value})}
+                            className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
+                          >
+                            <option value="Любой">Любое</option>
+                            {LOCATION_TYPES.map((t: string) => <option key={t} value={t}>{t}</option>)}
+                          </select>
+                        </div>
+                      )}
+                      {isHouses && filters.locationType === 'За городом' && ( // Moved "Расстояние от города (км)" here
+                        <div className="space-y-3">
+                          <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Расстояние от города (км)</label>
+                          <input 
+                            type="number" 
+                            placeholder="До" 
+                            value={filters.distanceFromCityKm} 
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters({...filters, distanceFromCityKm: e.target.value})} 
+                            className="w-full bg-slate-50 rounded-2xl p-4 text-sm font-bold outline-none" 
+                          />
+                        </div>
+                      )}
                       <div className="space-y-3">
                         <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Район</label>
                         <select 
@@ -499,33 +524,7 @@ const App: React.FC = () => {
                           </div>
                         )}
 
-                        {isHouses && ( // New location filters for 'houses' category
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-10">
-                            <div className="space-y-3">
-                              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Расположение</label>
-                              <select 
-                                value={filters.locationType}
-                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, locationType: e.target.value})}
-                                className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
-                              >
-                                <option value="Любой">Любое</option>
-                                {LOCATION_TYPES.map((t: string) => <option key={t} value={t}>{t}</option>)}
-                              </select>
-                            </div>
-                            {filters.locationType === 'За городом' && (
-                              <div className="space-y-3 lg:col-span-2">
-                                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Расстояние от города (км)</label>
-                                <input 
-                                  type="number" 
-                                  placeholder="До" 
-                                  value={filters.distanceFromCityKm} 
-                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters({...filters, distanceFromCityKm: e.target.value})} 
-                                  className="w-full bg-slate-50 rounded-2xl p-4 text-sm font-bold outline-none" 
-                                />
-                              </div>
-                            )}
-                          </div>
-                        )}
+                        {/* Removed location filters from here as they are now in the main grid */}
 
                         {!isLand && (
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 py-8 border-y border-slate-50">
