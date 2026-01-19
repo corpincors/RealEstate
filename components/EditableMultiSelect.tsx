@@ -39,11 +39,12 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Add this useEffect for debugging
   useEffect(() => {
-    console.log(`EditableMultiSelect (${label}): initialOptions updated`, initialOptions); // Добавлен лог
-  }, [initialOptions, label]);
+    console.log(`[${label}] EditableMultiSelect - initialOptions:`, initialOptions);
+    console.log(`[${label}] EditableMultiSelect - selected:`, selected);
+  }, [initialOptions, selected, label]);
 
-  // filteredOptions now just uses initialOptions directly, as it's already combined
   const filteredOptions = useMemo(() => {
     return initialOptions.filter(option =>
       option.toLowerCase().includes(inputValue.toLowerCase())
@@ -60,7 +61,7 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
 
   const handleAddCustomOption = () => {
     const trimmedValue = inputValue.trim();
-    if (trimmedValue && !initialOptions.includes(trimmedValue)) { // Check against all initial options
+    if (trimmedValue && !initialOptions.includes(trimmedValue)) {
       onAddCustomOption(trimmedValue);
       setInputValue('');
       inputRef.current?.focus();
@@ -76,8 +77,7 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
 
   const handleRemove = (e: React.MouseEvent, option: string) => {
     e.stopPropagation();
-    onRemoveOption(option); // Call the global remove handler
-    // Also deselect if it was selected for the current property
+    onRemoveOption(option);
     onChange(selected.filter(item => item !== option));
   };
 
@@ -100,7 +100,7 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
         type="button"
         onClick={() => {
           setIsOpen(!isOpen);
-          console.log(`EditableMultiSelect: Toggling dropdown for ${label}. New state: ${!isOpen}`);
+          console.log(`[${label}] EditableMultiSelect: Toggling dropdown. New state: ${!isOpen}`);
         }}
         className={`w-full ${bgColorClass} border ${borderColorClass} text-left p-4 rounded-2xl font-bold text-xs flex justify-between items-center transition hover:opacity-80`}
       >
@@ -145,7 +145,7 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
                     />
                     <span className="group-hover:text-blue-600 transition-colors">{option}</span>
                   </div>
-                  {!constantOptions.includes(option) && ( // Only show delete for non-constant options
+                  {!constantOptions.includes(option) && (
                     <button
                       type="button"
                       onClick={(e: React.MouseEvent) => handleRemove(e, option)}

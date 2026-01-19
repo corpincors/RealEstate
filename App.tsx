@@ -160,9 +160,11 @@ const App: React.FC = () => {
 
   // Functions to add custom options
   const handleAddCustomOption = useCallback((category: keyof typeof customOptions, option: string) => {
+    console.log(`[App] Adding custom option: ${option} to category: ${category}`);
     setCustomOptions(prev => {
       const updatedCategory = Array.from(new Set([...prev[category], option])).sort();
       const updatedOptions = { ...prev, [category]: updatedCategory };
+      console.log(`[App] New customOptions state for ${category}:`, updatedCategory);
       updateCustomOptionsOnServer(updatedOptions);
       return updatedOptions;
     });
@@ -170,8 +172,10 @@ const App: React.FC = () => {
 
   // Functions to remove custom options
   const handleRemoveCustomOption = useCallback((category: keyof typeof customOptions, optionToRemove: string, initialConstants: string[]) => {
+    console.log(`[App] Attempting to remove custom option: ${optionToRemove} from category: ${category}`);
     if (initialConstants.includes(optionToRemove)) {
       showError(`Нельзя удалить предопределенную опцию "${optionToRemove}".`);
+      console.warn(`[App] Attempted to remove constant option: ${optionToRemove}`);
       return;
     }
     if (!window.confirm(`Вы уверены, что хотите удалить пользовательскую опцию "${optionToRemove}"?`)) {
@@ -181,6 +185,7 @@ const App: React.FC = () => {
     setCustomOptions(prev => {
       const updatedCategory = prev[category].filter(opt => opt !== optionToRemove);
       const updatedOptions = { ...prev, [category]: updatedCategory };
+      console.log(`[App] New customOptions state for ${category} after removal:`, updatedCategory);
       updateCustomOptionsOnServer(updatedOptions);
       return updatedOptions;
     });
