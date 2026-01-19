@@ -6,8 +6,8 @@ import SingleSelectWithDelete from './SingleSelectWithDelete';
 import { 
   LAND_TYPES, HOUSE_TYPES, REPAIR_TYPES, HOUSING_CLASSES,
   HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, COMM_OPTIONS, INFRA_OPTIONS,
-  INITIAL_DISTRICTS, HOUSE_SUBTYPES, LOCATION_TYPES
-} from '../constants.tsx';
+  INITIAL_DISTRICTS, HOUSE_SUBTYPES
+} from '../constants.tsx'; // Удален LOCATION_TYPES
 
 interface PropertyFormModalProps {
   isOpen: boolean;
@@ -109,7 +109,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     const newCategory = e.target.value;
     setFormData(prev => ({ 
       ...prev, 
-      category: newCategory,
+      category: newCategory as Property['category'], // Убедимся, что тип корректен
       houseSubtype: newCategory === 'houses' ? HOUSE_SUBTYPES[0] : undefined, // Сброс или установка подкатегории
       locationType: newCategory === 'houses' ? 'inCity' : undefined, // Сброс или установка типа местоположения
       distanceFromCityKm: newCategory === 'houses' ? undefined : undefined // Сброс расстояния
@@ -117,7 +117,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
   };
 
   const handleLocationTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newLocationType = e.target.value === 'В городе' ? 'inCity' : 'outsideCity';
+    const newLocationType: Property['locationType'] = e.target.value === 'В городе' ? 'inCity' : 'outsideCity';
     setFormData(prev => ({ 
       ...prev, 
       locationType: newLocationType,
@@ -255,7 +255,6 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                 className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
               >
                 <option value="apartments">Квартиры</option>
-                <option value="cottage">Коттеджи</option>
                 <option value="houses">Дома</option>
                 <option value="commercial">Коммерция</option>
                 <option value="land">Земельные участки</option>

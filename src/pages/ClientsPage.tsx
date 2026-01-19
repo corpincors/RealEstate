@@ -5,7 +5,7 @@ import { Client } from '../../types';
 import { PlusCircle, Users, Edit, Trash2 } from '../../components/Icons';
 import ClientFormModal from '../components/ClientFormModal';
 import { showSuccess, showError } from '../utils/toast';
-import { useNavigate, Link } from 'react-router-dom'; // Import Link
+import { useNavigate } from 'react-router-dom'; 
 
 const API_URL = '/api/clients';
 
@@ -13,7 +13,7 @@ const ClientsPage: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
-  const navigate = useNavigate(); // Initialize useNavigate
+  // const navigate = useNavigate(); // Удалена неиспользуемая переменная
 
   const fetchClients = useCallback(async () => {
     try {

@@ -37,5 +37,13 @@
       "publicLink": "http://192.168.5.102:3000/property/01xgo3dka?clientMode=true"
     }
   ],
-  "clients": []
+  "clients": [
+    {
+      "id": "ans4ddfd3",
+      "clientName": "3213",
+      "phoneNumber": "213213",
+      "lastCalled": "2026-01-18T23:59:22.910Z",
+      "request": "3213213"
+    }
+  ]
 }
