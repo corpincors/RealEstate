@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate, Link } from 'react-router-dom';
 import { Property, FilterState, PropertyCategory } from './types';
 import { 
-  ROOMS_OPTIONS, LAND_TYPES, HOUSE_TYPES, 
+  ROOMS_OPTIONS, LAND_TYPES, // HOUSE_TYPES удален
   REPAIR_TYPES, HOUSING_CLASSES, HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, 
   COMM_OPTIONS, INFRA_OPTIONS, CATEGORIES, INITIAL_DISTRICTS, HOUSE_TYPES_EXTENDED, LOCATION_TYPES,
   YEAR_BUILT_OPTIONS, WALL_TYPE_OPTIONS
@@ -116,7 +116,7 @@ const App: React.FC = () => {
     maxTotalFloors: '',
     rooms: 'Любое',
     type: 'Любой',
-    houseType: 'Любой',
+    // houseType: 'Любой', // Удалено
     housingClass: 'Любой',
     hasFurniture: null,
     hasRepair: null,
@@ -170,7 +170,7 @@ const App: React.FC = () => {
         if (filters.maxArea && p.totalArea > Number(filters.maxArea)) return false;
         if (filters.minKitchenArea && (p.kitchenArea || 0) < Number(filters.minKitchenArea)) return false;
         if (filters.maxKitchenArea && (p.kitchenArea || 0) > Number(filters.maxKitchenArea)) return false;
-        if (filters.houseType !== 'Любой' && p.houseType !== filters.houseType) return false;
+        // if (filters.houseType !== 'Любой' && p.houseType !== filters.houseType) return false; // Удалено
         if (filters.housingClass !== 'Любой' && p.housingClass !== filters.housingClass) return false;
         if (filters.hasFurniture !== null && p.hasFurniture !== filters.hasFurniture) return false;
         if (filters.hasRepair !== null && p.hasRepair !== filters.hasRepair) return false;
@@ -250,7 +250,9 @@ const App: React.FC = () => {
       district: 'Любой',
       minPrice: '', maxPrice: '', minArea: '', maxArea: '', minKitchenArea: '', maxKitchenArea: '',
       minFloor: '', maxFloor: '', minTotalFloors: '', maxTotalFloors: '',
-      rooms: 'Любое', type: 'Любой', houseType: 'Любой', housingClass: 'Любой',
+      rooms: 'Любое', type: 'Любой', 
+      // houseType: 'Любой', // Удалено
+      housingClass: 'Любой',
       hasFurniture: null, hasRepair: null, repairType: 'Любой', heating: 'Любой',
       isEOselya: null, landType: 'Любой', minLandArea: '', maxLandArea: '',
       houseSubtype: 'Любой',
@@ -505,13 +507,14 @@ const App: React.FC = () => {
                                 <input type="number" placeholder="До" value={filters.maxKitchenArea} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters({...filters, maxKitchenArea: e.target.value})} className="w-1/2 bg-slate-50 rounded-2xl p-4 text-sm font-bold outline-none" />
                               </div>
                             </div>
-                            <div className="space-y-3">
+                            {/* Удалено поле Тип дома */}
+                            {/* <div className="space-y-3">
                               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Тип дома</label>
                               <select value={filters.houseType} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, houseType: e.target.value})} className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition">
                                 <option value="Любой">Любой тип</option>
                                 {HOUSE_TYPES.map((t: string) => <option key={t} value={t}>{t}</option>)}
                               </select>
-                            </div>
+                            </div> */}
                             <div className="space-y-3">
                               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Класс жилья</label>
                               <select value={filters.housingClass} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, housingClass: e.target.value})} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">

@@ -14,8 +14,8 @@ export interface Property {
   totalArea: number;
   kitchenArea?: number;
   landArea?: number;
-  houseType: string;
-  housingClass: string; // Изменено с 'Эконом' | 'Комфорт' | 'Бизнес' | 'Элит' на string
+  // houseType: string; // Удалено поле Тип дома
+  housingClass: string;
   hasFurniture: boolean;
   hasRepair: boolean;
   repairType: string;
@@ -53,7 +53,7 @@ export interface FilterState {
   maxTotalFloors: string;
   rooms: string;
   type: string;
-  houseType: string;
+  // houseType: string; // Удалено поле Тип дома
   housingClass: string;
   hasFurniture: boolean | null;
   hasRepair: boolean | null;

@@ -4,7 +4,7 @@ import { X, Home, Layers, Camera, Plus, Phone } from './Icons';
 import MultiSelect from './MultiSelect';
 import SingleSelectWithDelete from './SingleSelectWithDelete';
 import { 
-  LAND_TYPES, HOUSE_TYPES, REPAIR_TYPES, HOUSING_CLASSES,
+  LAND_TYPES, REPAIR_TYPES, HOUSING_CLASSES, // HOUSE_TYPES удален
   HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, COMM_OPTIONS, INFRA_OPTIONS,
   INITIAL_DISTRICTS, HOUSE_TYPES_EXTENDED, YEAR_BUILT_OPTIONS, WALL_TYPE_OPTIONS
 } from '../constants.tsx';
@@ -36,7 +36,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     ownerPhone: '',
     totalArea: 0,
     rooms: '1',
-    houseType: HOUSE_TYPES[0],
+    // houseType: HOUSE_TYPES[0], // Удалено
     housingClass: 'Комфорт',
     hasFurniture: false,
     hasRepair: false,
@@ -71,7 +71,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
         ownerPhone: '',
         totalArea: 0,
         rooms: '1',
-        houseType: HOUSE_TYPES[0],
+        // houseType: undefined, // Удалено
         housingClass: 'Комфорт',
         hasFurniture: false,
         hasRepair: false,
@@ -150,9 +150,9 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
   };
 
   // New handlers for the fields that will use SingleSelectWithDelete
-  const handleHouseTypeChange = (value: string) => {
-    setFormData(prev => ({ ...prev, houseType: value }));
-  };
+  // const handleHouseTypeChange = (value: string) => { // Удалено
+  //   setFormData(prev => ({ ...prev, houseType: value }));
+  // };
 
   const handleHousingClassChange = (value: string) => {
     setFormData(prev => ({ ...prev, housingClass: value }));
@@ -476,7 +476,8 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                     <input type="number" name="kitchenArea" placeholder="15" value={formData.kitchenArea || ''} onChange={handleChange} className="w-1/2 bg-slate-50 rounded-2xl p-4 outline-none font-bold" />
                   </div>
                 </div>
-                <div className="space-y-2">
+                {/* Удалено поле Тип дома */}
+                {/* <div className="space-y-2">
                   <SingleSelectWithDelete
                     label="Тип дома"
                     options={HOUSE_TYPES}
@@ -485,7 +486,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                     onChange={handleHouseTypeChange}
                     onRemoveOption={() => {}}
                   />
-                </div>
+                </div> */}
                 <div className="space-y-2">
                   <SingleSelectWithDelete
                     label="Класс жилья"
