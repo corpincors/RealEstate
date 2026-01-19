@@ -6,8 +6,8 @@ import SingleSelectWithDelete from './SingleSelectWithDelete';
 import { 
   LAND_TYPES, HOUSE_TYPES, REPAIR_TYPES, HOUSING_CLASSES,
   HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, COMM_OPTIONS, INFRA_OPTIONS,
-  INITIAL_DISTRICTS, HOUSE_SUBTYPES
-} from '../constants.tsx'; // Удален LOCATION_TYPES
+  INITIAL_DISTRICTS, HOUSE_TYPES_EXTENDED, // Удален LOCATION_TYPES
+} from '../constants.tsx';
 
 interface PropertyFormModalProps {
   isOpen: boolean;
@@ -49,7 +49,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     isEOselya: false,
     description: '',
     imageUrls: [],
-    houseSubtype: HOUSE_SUBTYPES[0], // Инициализация нового поля
+    houseSubtype: HOUSE_TYPES_EXTENDED[0], // Инициализация нового поля
     locationType: 'inCity', // Инициализация нового поля
     distanceFromCityKm: undefined // Инициализация нового поля
   });
@@ -80,7 +80,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
         isEOselya: false,
         description: '',
         imageUrls: [],
-        houseSubtype: HOUSE_SUBTYPES[0], // Сброс для нового объекта
+        houseSubtype: HOUSE_TYPES_EXTENDED[0], // Сброс для нового объекта
         locationType: 'inCity', // Сброс для нового объекта
         distanceFromCityKm: undefined // Сброс для нового объекта
       });
@@ -110,7 +110,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     setFormData(prev => ({ 
       ...prev, 
       category: newCategory as Property['category'], // Убедимся, что тип корректен
-      houseSubtype: newCategory === 'houses' ? HOUSE_SUBTYPES[0] : undefined, // Сброс или установка подкатегории
+      houseSubtype: newCategory === 'houses' ? HOUSE_TYPES_EXTENDED[0] : undefined, // Сброс или установка подкатегории
       locationType: newCategory === 'houses' ? 'inCity' : undefined, // Сброс или установка типа местоположения
       distanceFromCityKm: newCategory === 'houses' ? undefined : undefined // Сброс расстояния
     }));
@@ -342,16 +342,16 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                     <option value="Construction">Строящийся</option>
                   </select>
                 </div>
-                {isHouses && ( // Поле для подкатегории домов
+                {isHouses && ( // Поле для типа дома
                   <div className="space-y-2">
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Подкатегория</label>
+                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Тип дома</label>
                     <select 
                       name="houseSubtype" 
                       value={formData.houseSubtype || ''} 
                       onChange={handleChange} 
                       className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold"
                     >
-                      {HOUSE_SUBTYPES.map((t: string) => <option key={t} value={t}>{t}</option>)}
+                      {HOUSE_TYPES_EXTENDED.map((t: string) => <option key={t} value={t}>{t}</option>)}
                     </select>
                   </div>
                 )}

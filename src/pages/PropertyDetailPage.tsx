@@ -138,7 +138,7 @@ const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({ properties }) =
               <li className="flex justify-between"><span>Категория:</span> <span className="font-semibold">{categoryLabel}</span></li>
               {property.category === 'houses' && (
                 <>
-                  <li className="flex justify-between"><span>Подкатегория:</span> <span className="font-semibold">{property.houseSubtype || '—'}</span></li>
+                  <li className="flex justify-between"><span>Тип дома:</span> <span className="font-semibold">{property.houseSubtype || '—'}</span></li>
                   <li className="flex justify-between">
                     <span>Расположение:</span> 
                     <span className="font-semibold">

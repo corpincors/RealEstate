@@ -13,7 +13,7 @@ export const HOUSING_CLASSES = ['Эконом', 'Комфорт', 'Бизнес'
 export const HEATING_OPTIONS = ['Центральное', 'Индивидуальное газовое', 'Индивидуальное электрическое', 'Твердотопливное'];
 
 export const TECH_OPTIONS = [
-  'Холодильник', 'Плита', 'Микроволновая печь', 'Духовой шкаф', 'Стиральная машина',
+  'Холодильник', 'Плита', 'Микроволновая печь', 'Духовой шкаль', 'Стиральная машина',
   'Посудомоечная машина', 'Кондиционер', 'Телевизор', 'Фен', 'Утюг'
 ];
 
@@ -33,9 +33,11 @@ export const INFRA_OPTIONS = [
   'Ресторан, кафе', 'Отделение почты', 'Отделение банка, банкомат'
 ];
 
-export const HOUSE_SUBTYPES = ['Таунхаус', 'Дуплекс'] as const; // Уточнено как 'as const'
+export const HOUSE_TYPES_EXTENDED = [
+  'Клубный дом', 'Коттедж', 'Дача', 'Дуплекс', 'Дом', 'Часть дома', 'Модульные дома', 'Таунхаус'
+] as const; // Переименовано и обновлено
 
-export const LOCATION_TYPES = ['В городе', 'За городом'] as const; // Уточнено как 'as const'
+export const LOCATION_TYPES = ['В городе', 'За городом'] as const;
 
 export const CATEGORIES: Array<{ id: PropertyCategory; label: string }> = [
   { id: 'apartments', label: 'Квартиры' },

@@ -4,7 +4,7 @@ import { Property, FilterState, PropertyCategory } from './types';
 import { 
   ROOMS_OPTIONS, LAND_TYPES, HOUSE_TYPES, 
   REPAIR_TYPES, HOUSING_CLASSES, HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, 
-  COMM_OPTIONS, INFRA_OPTIONS, CATEGORIES, INITIAL_DISTRICTS, HOUSE_SUBTYPES, LOCATION_TYPES
+  COMM_OPTIONS, INFRA_OPTIONS, CATEGORIES, INITIAL_DISTRICTS, HOUSE_TYPES_EXTENDED, LOCATION_TYPES
 } from './constants.tsx';
 import { PlusCircle, Search, Plus, Home, LogOut, ChevronDown, Users } from './components/Icons';
 import PropertyCard from './components/PropertyCard';
@@ -175,7 +175,7 @@ const App: React.FC = () => {
         if (filters.heating !== 'Любой' && p.heating !== filters.heating) return false;
         if (filters.isEOselya !== null && p.isEOselya !== filters.isEOselya) return false;
 
-        // New filter for houseSubtype
+        // New filter for houseSubtype (now "Тип дома")
         if (filters.category === 'houses' && filters.houseSubtype !== 'Любой' && p.houseSubtype !== filters.houseSubtype) return false;
         
         // New filters for locationType and distanceFromCityKm
@@ -388,17 +388,17 @@ const App: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* New filter for house subtype */}
+                      {/* New filter for house subtype (now "Тип дома") */}
                       {isHouses && (
                         <div className="space-y-3">
-                          <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Подкатегория</label>
+                          <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Тип дома</label>
                           <select 
                             value={filters.houseSubtype}
                             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, houseSubtype: e.target.value})}
                             className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
                           >
-                            <option value="Любой">Любая</option>
-                            {HOUSE_SUBTYPES.map((t: string) => <option key={t} value={t}>{t}</option>)}
+                            <option value="Любой">Любой</option>
+                            {HOUSE_TYPES_EXTENDED.map((t: string) => <option key={t} value={t}>{t}</option>)}
                           </select>
                         </div>
                       )}

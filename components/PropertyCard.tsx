@@ -81,7 +81,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onEdit, onDelete,
   const getCategoryTag = () => {
     if (property.category === 'land') return 'Участок';
     if (property.category === 'houses') {
-      let tag = property.houseSubtype || 'Дома';
+      let tag = property.houseSubtype || 'Дома'; // Используем houseSubtype
       if (property.locationType === 'inCity') {
         tag += ' (В городе)';
       } else if (property.locationType === 'outsideCity' && property.distanceFromCityKm !== undefined) {

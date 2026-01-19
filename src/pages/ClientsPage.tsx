@@ -5,7 +5,7 @@ import { Client } from '../../types';
 import { PlusCircle, Users, Edit, Trash2 } from '../../components/Icons';
 import ClientFormModal from '../components/ClientFormModal';
 import { showSuccess, showError } from '../utils/toast';
-import { useNavigate } from 'react-router-dom'; 
+// import { useNavigate } from 'react-router-dom'; // Удален неиспользуемый импорт
 
 const API_URL = '/api/clients';
 
