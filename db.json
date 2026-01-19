@@ -14,11 +14,15 @@
     "housingClasses": [],
     "repairTypes": [],
     "heatingOptions": [],
-    "yearBuiltOptions": [],
+    "yearBuiltOptions": [
+      "2010-2020"
+    ],
     "wallTypeOptions": [],
     "bathroomOptions": [],
     "techOptions": [],
     "comfortOptions": [
+      "123",
+      "12345",
       "23"
     ],
     "commOptions": [],

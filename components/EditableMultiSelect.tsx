@@ -39,6 +39,10 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    console.log(`EditableMultiSelect (${label}): initialOptions updated`, initialOptions); // Добавлен лог
+  }, [initialOptions, label]);
+
   // filteredOptions now just uses initialOptions directly, as it's already combined
   const filteredOptions = useMemo(() => {
     return initialOptions.filter(option =>

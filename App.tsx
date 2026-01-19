@@ -129,8 +129,15 @@ const App: React.FC = () => {
     }
   }, []);
 
-  const getUniqueOptions = useCallback((initialConstants: string[], customList: string[], propertyField: keyof Property) => {
-    const propertyValues = properties.map((p: Property) => p[propertyField]).filter(Boolean) as string[];
+  const getUniqueOptions = useCallback((initialConstants: string[], customList: string[], propertyField: keyof Property | 'tech' | 'comfort' | 'comm' | 'infra') => {
+    const propertyValues = properties.map((p: Property) => {
+      const value = p[propertyField as keyof Property];
+      if (Array.isArray(value)) {
+        return value;
+      }
+      return value;
+    }).flat().filter(Boolean) as string[];
+    
     const combined = [...initialConstants, ...customList, ...propertyValues];
     return Array.from(new Set(combined.filter(v => typeof v === 'string' && v.trim() !== ''))).sort();
   }, [properties]);
