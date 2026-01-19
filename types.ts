@@ -15,7 +15,7 @@ export interface Property {
   kitchenArea?: number;
   landArea?: number;
   houseType: string;
-  housingClass: 'Эконом' | 'Комфорт' | 'Бизнес' | 'Элит';
+  housingClass: string; // Изменено с 'Эконом' | 'Комфорт' | 'Бизнес' | 'Элит' на string
   hasFurniture: boolean;
   hasRepair: boolean;
   repairType: string;

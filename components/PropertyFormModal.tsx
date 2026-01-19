@@ -54,8 +54,8 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     distanceFromCityKm: undefined,
     plotArea: undefined,
     cadastralNumber: '',
-    yearBuilt: '', // Инициализация нового поля
-    wallType: '', // Инициализация нового поля
+    yearBuilt: '',
+    wallType: '',
   });
 
   useEffect(() => {
@@ -89,8 +89,8 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
         distanceFromCityKm: undefined,
         plotArea: undefined,
         cadastralNumber: '',
-        yearBuilt: '', // Сброс для нового объекта
-        wallType: '', // Сброс для нового объекта
+        yearBuilt: '',
+        wallType: '',
       });
     }
   }, [editingProperty, isOpen]);
@@ -123,8 +123,8 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
       distanceFromCityKm: newCategory === 'houses' ? undefined : undefined,
       plotArea: newCategory === 'houses' ? undefined : undefined,
       cadastralNumber: newCategory === 'houses' ? '' : undefined,
-      yearBuilt: newCategory === 'land' ? undefined : '', // Сброс для земли
-      wallType: newCategory === 'land' ? undefined : '', // Сброс для земли
+      yearBuilt: newCategory === 'land' ? undefined : '',
+      wallType: newCategory === 'land' ? undefined : '',
     }));
   };
 
@@ -147,6 +147,23 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
 
   const handleWallTypeChange = (value: string) => {
     setFormData(prev => ({ ...prev, wallType: value }));
+  };
+
+  // New handlers for the fields that will use SingleSelectWithDelete
+  const handleHouseTypeChange = (value: string) => {
+    setFormData(prev => ({ ...prev, houseType: value }));
+  };
+
+  const handleHousingClassChange = (value: string) => {
+    setFormData(prev => ({ ...prev, housingClass: value }));
+  };
+
+  const handleRepairTypeChange = (value: string) => {
+    setFormData(prev => ({ ...prev, repairType: value }));
+  };
+
+  const handleHeatingChange = (value: string) => {
+    setFormData(prev => ({ ...prev, heating: value }));
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -460,28 +477,44 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Тип дома</label>
-                  <select name="houseType" value={formData.houseType} onChange={handleChange} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">
-                    {HOUSE_TYPES.map((t: string) => <option key={t} value={t}>{t}</option>)}
-                  </select>
+                  <SingleSelectWithDelete
+                    label="Тип дома"
+                    options={HOUSE_TYPES}
+                    initialOptions={HOUSE_TYPES}
+                    selected={formData.houseType || ''}
+                    onChange={handleHouseTypeChange}
+                    onRemoveOption={() => {}}
+                  />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Класс жилья</label>
-                  <select name="housingClass" value={formData.housingClass} onChange={handleChange} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">
-                    {HOUSING_CLASSES.map((c: string) => <option key={c} value={c}>{c}</option>)}
-                  </select>
+                  <SingleSelectWithDelete
+                    label="Класс жилья"
+                    options={HOUSING_CLASSES}
+                    initialOptions={HOUSING_CLASSES}
+                    selected={formData.housingClass || ''}
+                    onChange={handleHousingClassChange}
+                    onRemoveOption={() => {}}
+                  />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Вид ремонта</label>
-                  <select name="repairType" value={formData.repairType} onChange={handleChange} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">
-                    {REPAIR_TYPES.map((r: string) => <option key={r} value={r}>{r}</option>)}
-                  </select>
+                  <SingleSelectWithDelete
+                    label="Вид ремонта"
+                    options={REPAIR_TYPES}
+                    initialOptions={REPAIR_TYPES}
+                    selected={formData.repairType || ''}
+                    onChange={handleRepairTypeChange}
+                    onRemoveOption={() => {}}
+                  />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Отопление</label>
-                  <select name="heating" value={formData.heating} onChange={handleChange} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">
-                    {HEATING_OPTIONS.map((h: string) => <option key={h} value={h}>{h}</option>)}
-                  </select>
+                  <SingleSelectWithDelete
+                    label="Отопление"
+                    options={HEATING_OPTIONS}
+                    initialOptions={HEATING_OPTIONS}
+                    selected={formData.heating || ''}
+                    onChange={handleHeatingChange}
+                    onRemoveOption={() => {}}
+                  />
                 </div>
                 {/* Новые поля: Год постройки/сдачи и Тип стен */}
                 <div className="space-y-2">
