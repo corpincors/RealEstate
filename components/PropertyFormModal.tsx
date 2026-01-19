@@ -291,14 +291,17 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
               </>
             )}
 
-            <SingleSelectWithDelete
-              label="Район"
-              options={availableDistricts}
-              initialOptions={INITIAL_DISTRICTS}
-              selected={formData.district || ''}
-              onChange={handleDistrictChange}
-              onRemoveOption={onRemoveCustomDistrict}
-            />
+            {/* Обернуто SingleSelectWithDelete в div.space-y-2 для выравнивания */}
+            <div className="space-y-2">
+              <SingleSelectWithDelete
+                label="Район"
+                options={availableDistricts}
+                initialOptions={INITIAL_DISTRICTS}
+                selected={formData.district || ''}
+                onChange={handleDistrictChange}
+                onRemoveOption={onRemoveCustomDistrict}
+              />
+            </div>
 
             <div className="space-y-2">
               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Цена ($)</label>
@@ -439,8 +442,6 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
               </div>
             )}
             
-            {/* Удален дублирующийся блок с расположением и расстоянием */}
-
             {!isLand && (
               <div className="flex flex-wrap gap-10 py-4">
                 <label className="flex items-center gap-4 cursor-pointer group">
