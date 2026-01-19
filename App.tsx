@@ -68,11 +68,20 @@ const App: React.FC = () => {
   const isPropertiesPage = useMemo(() => location.pathname === '/', [location.pathname]);
 
 
-  const availableDistricts = useMemo(() => {
-    const propertyDistricts = properties.map((p: Property) => p.district);
-    const combined = [...INITIAL_DISTRICTS, ...propertyDistricts];
-    return Array.from(new Set(combined.filter(d => d.trim() !== ''))).sort();
+  const getUniqueOptions = useCallback((initialOptions: string[], propertyField: keyof Property) => {
+    const propertyValues = properties.map((p: Property) => p[propertyField]).filter(Boolean) as string[];
+    const combined = [...initialOptions, ...propertyValues];
+    return Array.from(new Set(combined.filter(v => typeof v === 'string' && v.trim() !== ''))).sort();
   }, [properties]);
+
+  const availableDistricts = useMemo(() => getUniqueOptions(INITIAL_DISTRICTS, 'district'), [getUniqueOptions]);
+  // const availableHouseTypes = useMemo(() => getUniqueOptions(HOUSE_TYPES, 'houseType'), [getUniqueOptions]); // Удалено
+  const availableHousingClasses = useMemo(() => getUniqueOptions(HOUSING_CLASSES, 'housingClass'), [getUniqueOptions]);
+  const availableRepairTypes = useMemo(() => getUniqueOptions(REPAIR_TYPES, 'repairType'), [getUniqueOptions]);
+  const availableHeatingOptions = useMemo(() => getUniqueOptions(HEATING_OPTIONS, 'heating'), [getUniqueOptions]);
+  const availableYearBuiltOptions = useMemo(() => getUniqueOptions(YEAR_BUILT_OPTIONS, 'yearBuilt'), [getUniqueOptions]);
+  const availableWallTypeOptions = useMemo(() => getUniqueOptions(WALL_TYPE_OPTIONS, 'wallType'), [getUniqueOptions]);
+
 
   const handleRemoveCustomDistrict = async (districtToRemove: string) => {
     if (!window.confirm(`Вы уверены, что хотите удалить район "${districtToRemove}"? Все объекты, использующие его, будут обновлены.`)) {
@@ -508,29 +517,25 @@ const App: React.FC = () => {
                               </div>
                             </div>
                             {/* Удалено поле Тип дома */}
-                            {/* <div className="space-y-3">
-                              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Тип дома</label>
-                              <select value={filters.houseType} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, houseType: e.target.value})} className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition">
-                                <option value="Любой">Любой тип</option>
-                                {HOUSE_TYPES.map((t: string) => <option key={t} value={t}>{t}</option>)}
-                              </select>
-                            </div> */}
                             <div className="space-y-3">
                               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Класс жилья</label>
                               <select value={filters.housingClass} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, housingClass: e.target.value})} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">
-                                {HOUSING_CLASSES.map((c: string) => <option key={c} value={c}>{c}</option>)}
+                                <option value="Любой">Любой</option>
+                                {availableHousingClasses.map((c: string) => <option key={c} value={c}>{c}</option>)}
                               </select>
                             </div>
                             <div className="space-y-3">
                               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Вид ремонта</label>
                               <select value={filters.repairType} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, repairType: e.target.value})} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">
-                                {REPAIR_TYPES.map((r: string) => <option key={r} value={r}>{r}</option>)}
+                                <option value="Любой">Любой</option>
+                                {availableRepairTypes.map((r: string) => <option key={r} value={r}>{r}</option>)}
                               </select>
                             </div>
                             <div className="space-y-3">
                               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Отопление</label>
                               <select value={filters.heating} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, heating: e.target.value})} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">
-                                {HEATING_OPTIONS.map((h: string) => <option key={h} value={h}>{h}</option>)}
+                                <option value="Любой">Любой</option>
+                                {availableHeatingOptions.map((h: string) => <option key={h} value={h}>{h}</option>)}
                               </select>
                             </div>
                             {/* Новые фильтры: Год постройки/сдачи и Тип стен */}
@@ -542,7 +547,7 @@ const App: React.FC = () => {
                                 className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
                               >
                                 <option value="Любой">Любой</option>
-                                {YEAR_BUILT_OPTIONS.map((y: string) => <option key={y} value={y}>{y}</option>)}
+                                {availableYearBuiltOptions.map((y: string) => <option key={y} value={y}>{y}</option>)}
                               </select>
                             </div>
                             <div className="space-y-3">
@@ -553,13 +558,11 @@ const App: React.FC = () => {
                                 className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
                               >
                                 <option value="Любой">Любой</option>
-                                {WALL_TYPE_OPTIONS.map((w: string) => <option key={w} value={w}>{w}</option>)}
+                                {availableWallTypeOptions.map((w: string) => <option key={w} value={w}>{w}</option>)}
                               </select>
                             </div>
                           </div>
                         )}
-
-                        {/* Removed location filters from here as they are now in the main grid */}
 
                         {!isLand && (
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 py-8 border-y border-slate-50">
@@ -661,6 +664,12 @@ const App: React.FC = () => {
         editingProperty={editingProperty}
         availableDistricts={availableDistricts}
         onRemoveCustomDistrict={handleRemoveCustomDistrict}
+        // availableHouseTypes={availableHouseTypes} // Удалено
+        availableHousingClasses={availableHousingClasses}
+        availableRepairTypes={availableRepairTypes}
+        availableHeatingOptions={availableHeatingOptions}
+        availableYearBuiltOptions={availableYearBuiltOptions}
+        availableWallTypeOptions={availableWallTypeOptions}
       />
     </div>
   );

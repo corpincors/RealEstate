@@ -16,6 +16,11 @@ interface PropertyFormModalProps {
   editingProperty: Property | null;
   availableDistricts: string[];
   onRemoveCustomDistrict: (district: string) => void;
+  availableHousingClasses: string[]; // Добавлено
+  availableRepairTypes: string[];     // Добавлено
+  availableHeatingOptions: string[];  // Добавлено
+  availableYearBuiltOptions: string[]; // Добавлено
+  availableWallTypeOptions: string[];  // Добавлено
 }
 
 const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ 
@@ -24,7 +29,12 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
   onSave, 
   editingProperty,
   availableDistricts,
-  onRemoveCustomDistrict
+  onRemoveCustomDistrict,
+  availableHousingClasses,
+  availableRepairTypes,
+  availableHeatingOptions,
+  availableYearBuiltOptions,
+  availableWallTypeOptions,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<Partial<Property>>({
@@ -477,20 +487,10 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                   </div>
                 </div>
                 {/* Удалено поле Тип дома */}
-                {/* <div className="space-y-2">
-                  <SingleSelectWithDelete
-                    label="Тип дома"
-                    options={HOUSE_TYPES}
-                    initialOptions={HOUSE_TYPES}
-                    selected={formData.houseType || ''}
-                    onChange={handleHouseTypeChange}
-                    onRemoveOption={() => {}}
-                  />
-                </div> */}
                 <div className="space-y-2">
                   <SingleSelectWithDelete
                     label="Класс жилья"
-                    options={HOUSING_CLASSES}
+                    options={availableHousingClasses}
                     initialOptions={HOUSING_CLASSES}
                     selected={formData.housingClass || ''}
                     onChange={handleHousingClassChange}
@@ -500,7 +500,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                 <div className="space-y-2">
                   <SingleSelectWithDelete
                     label="Вид ремонта"
-                    options={REPAIR_TYPES}
+                    options={availableRepairTypes}
                     initialOptions={REPAIR_TYPES}
                     selected={formData.repairType || ''}
                     onChange={handleRepairTypeChange}
@@ -510,7 +510,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                 <div className="space-y-2">
                   <SingleSelectWithDelete
                     label="Отопление"
-                    options={HEATING_OPTIONS}
+                    options={availableHeatingOptions}
                     initialOptions={HEATING_OPTIONS}
                     selected={formData.heating || ''}
                     onChange={handleHeatingChange}
@@ -521,7 +521,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                 <div className="space-y-2">
                   <SingleSelectWithDelete
                     label="Год постройки/сдачи"
-                    options={YEAR_BUILT_OPTIONS}
+                    options={availableYearBuiltOptions}
                     initialOptions={YEAR_BUILT_OPTIONS}
                     selected={formData.yearBuilt || ''}
                     onChange={handleYearBuiltChange}
@@ -531,7 +531,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                 <div className="space-y-2">
                   <SingleSelectWithDelete
                     label="Тип стен"
-                    options={WALL_TYPE_OPTIONS}
+                    options={availableWallTypeOptions}
                     initialOptions={WALL_TYPE_OPTIONS}
                     selected={formData.wallType || ''}
                     onChange={handleWallTypeChange}
