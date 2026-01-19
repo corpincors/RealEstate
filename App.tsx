@@ -127,8 +127,7 @@ const App: React.FC = () => {
     maxLandArea: '',
     houseSubtype: 'Любой', // Добавлено новое поле фильтра
     locationType: 'Любой', // Инициализация нового поля
-    minDistanceFromCityKm: '', // Инициализация нового поля
-    maxDistanceFromCityKm: '', // Инициализация нового поля
+    distanceFromCityKm: '', // Инициализация нового поля
     tech: [],
     comfort: [],
     comm: [],
@@ -138,6 +137,7 @@ const App: React.FC = () => {
 
   const filteredProperties = useMemo(() => {
     const lowerCaseKeywords = filters.keywords.toLowerCase();
+    const filterDistanceFromCity = Number(filters.distanceFromCityKm);
 
     return properties.filter((p: Property) => {
       if (p.category !== filters.category) return false;
@@ -184,9 +184,8 @@ const App: React.FC = () => {
             if (filters.locationType === 'В городе' && p.locationType !== 'inCity') return false;
             if (filters.locationType === 'За городом' && p.locationType !== 'outsideCity') return false;
           }
-          if (filters.locationType === 'За городом') {
-            if (filters.minDistanceFromCityKm && (p.distanceFromCityKm || 0) < Number(filters.minDistanceFromCityKm)) return false;
-            if (filters.maxDistanceFromCityKm && (p.distanceFromCityKm || 0) > Number(filters.maxDistanceFromCityKm)) return false;
+          if (filters.locationType === 'За городом' && filters.distanceFromCityKm) {
+            if (p.distanceFromCityKm === undefined || p.distanceFromCityKm > filterDistanceFromCity) return false;
           }
         }
 
@@ -251,8 +250,7 @@ const App: React.FC = () => {
       isEOselya: null, landType: 'Любой', minLandArea: '', maxLandArea: '',
       houseSubtype: 'Любой', // Сброс нового поля
       locationType: 'Любой', // Сброс нового поля
-      minDistanceFromCityKm: '', // Сброс нового поля
-      maxDistanceFromCityKm: '', // Сброс нового поля
+      distanceFromCityKm: '', // Сброс нового поля
       tech: [], comfort: [], comm: [], infra: [],
       keywords: '',
     });
@@ -355,8 +353,7 @@ const App: React.FC = () => {
                             category: cat.id as PropertyCategory, 
                             houseSubtype: 'Любой', // Reset houseSubtype on category change
                             locationType: 'Любой', // Reset locationType on category change
-                            minDistanceFromCityKm: '', // Reset distance on category change
-                            maxDistanceFromCityKm: '' // Reset distance on category change
+                            distanceFromCityKm: '' // Reset distance on category change
                           }))} 
                           className={`px-8 py-3.5 rounded-full font-black text-xs uppercase tracking-widest transition-all ${
                             filters.category === cat.id ? 'bg-white text-blue-600 shadow-xl' : 'text-slate-400 hover:text-slate-600'
@@ -518,10 +515,13 @@ const App: React.FC = () => {
                             {filters.locationType === 'За городом' && (
                               <div className="space-y-3 lg:col-span-2">
                                 <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Расстояние от города (км)</label>
-                                <div className="flex gap-2">
-                                  <input type="number" placeholder="От" value={filters.minDistanceFromCityKm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters({...filters, minDistanceFromCityKm: e.target.value})} className="w-1/2 bg-slate-50 rounded-2xl p-4 text-sm font-bold outline-none" />
-                                  <input type="number" placeholder="До" value={filters.maxDistanceFromCityKm} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters({...filters, maxDistanceFromCityKm: e.target.value})} className="w-1/2 bg-slate-50 rounded-2xl p-4 text-sm font-bold outline-none" />
-                                </div>
+                                <input 
+                                  type="number" 
+                                  placeholder="До" 
+                                  value={filters.distanceFromCityKm} 
+                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters({...filters, distanceFromCityKm: e.target.value})} 
+                                  className="w-full bg-slate-50 rounded-2xl p-4 text-sm font-bold outline-none" 
+                                />
                               </div>
                             )}
                           </div>

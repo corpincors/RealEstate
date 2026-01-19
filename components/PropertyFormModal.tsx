@@ -6,8 +6,8 @@ import SingleSelectWithDelete from './SingleSelectWithDelete';
 import { 
   LAND_TYPES, HOUSE_TYPES, REPAIR_TYPES, HOUSING_CLASSES,
   HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, COMM_OPTIONS, INFRA_OPTIONS,
-  INITIAL_DISTRICTS, HOUSE_TYPES_EXTENDED, // Удален LOCATION_TYPES
-} from '../constants.tsx';
+  INITIAL_DISTRICTS, HOUSE_TYPES_EXTENDED
+} from '../constants.tsx'; // Удален LOCATION_TYPES
 
 interface PropertyFormModalProps {
   isOpen: boolean;

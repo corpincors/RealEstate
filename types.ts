@@ -61,8 +61,7 @@ export interface FilterState {
   maxLandArea: string;
   houseSubtype: string; // Добавлено поле для фильтрации по типу дома
   locationType: string; // Добавлено поле для фильтрации по типу местоположения
-  minDistanceFromCityKm: string; // Добавлено поле для фильтрации по мин. расстоянию от города
-  maxDistanceFromCityKm: string; // Добавлено поле для фильтрации по макс. расстоянию от города
+  distanceFromCityKm: string; // Изменено на одно поле для фильтрации по расстоянию от города
   tech: string[];
   comfort: string[];
   comm: string[];
