@@ -94,7 +94,10 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
       </label>
       <button 
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          setIsOpen(!isOpen);
+          console.log(`EditableMultiSelect: Toggling dropdown for ${label}. New state: ${!isOpen}`);
+        }}
         className={`w-full ${bgColorClass} border ${borderColorClass} text-left p-4 rounded-2xl font-bold text-xs flex justify-between items-center transition hover:opacity-80`}
       >
         <span className={`truncate ${selected.length > 0 ? `text-${accentColor}-600` : 'text-slate-700'}`}>
