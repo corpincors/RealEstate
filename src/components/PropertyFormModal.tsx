@@ -5,7 +5,8 @@ import EditableMultiSelect from '../../components/EditableMultiSelect';
 import EditableSingleSelect from '../../components/EditableSingleSelect';
 import { 
   LAND_TYPES, // LAND_TYPES remains, as it is used directly
-  HOUSE_TYPES_EXTENDED // HOUSE_TYPES_EXTENDED remains, as it is used directly
+  HOUSE_TYPES_EXTENDED, // HOUSE_TYPES_EXTENDED remains, as it is used directly
+  TECH_OPTIONS, COMFORT_OPTIONS, COMM_OPTIONS, INFRA_OPTIONS, // These are needed for constantOptions
 } from '../../constants.tsx';
 
 interface PropertyFormModalProps {
@@ -42,7 +43,6 @@ interface PropertyFormModalProps {
   onAddCustomBathroomOption: (option: string) => void;
   onRemoveCustomBathroomOption: (option: string) => void;
 
-  // These props are correctly defined in the interface
   availableTechOptions: string[]; 
   onAddCustomTechOption: (option: string) => void;
   onRemoveCustomTechOption: (option: string) => void; 
@@ -129,6 +129,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
   });
 
   useEffect(() => {
+    // console.log("PropertyFormModal.tsx - availableComfortOptions prop received:", availableComfortOptions); // Removed log
     if (editingProperty) {
       setFormData(editingProperty);
     } else if (isOpen) {
@@ -648,7 +649,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                   label="Бытовая техника" 
                   prefix="Т" 
                   initialOptions={availableTechOptions}
-                  constantOptions={[]} 
+                  constantOptions={TECH_OPTIONS} 
                   selected={formData.tech || []} 
                   onChange={(s: string[]) => setFormData((p: Partial<Property>) => ({...p, tech: s}))} 
                   onAddCustomOption={onAddCustomTechOption}
@@ -657,8 +658,8 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                 <EditableMultiSelect 
                   label="Комфорт" 
                   prefix="К" 
-                  initialOptions={availableComfortOptions}
-                  constantOptions={[]} 
+                  initialOptions={availableComfortOptions} 
+                  constantOptions={COMFORT_OPTIONS} 
                   selected={formData.comfort || []} 
                   onChange={(s: string[]) => setFormData((p: Partial<Property>) => ({...p, comfort: s}))} 
                   onAddCustomOption={onAddCustomComfortOption}
@@ -668,7 +669,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                   label="Коммуникации" 
                   prefix="К" 
                   initialOptions={availableCommOptions}
-                  constantOptions={[]} 
+                  constantOptions={COMM_OPTIONS} 
                   selected={formData.comm || []} 
                   onChange={(s: string[]) => setFormData((p: Partial<Property>) => ({...p, comm: s}))} 
                   onAddCustomOption={onAddCustomCommOption}
@@ -678,7 +679,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                   label="Инфраструктура" 
                   prefix="И" 
                   initialOptions={availableInfraOptions}
-                  constantOptions={[]} 
+                  constantOptions={INFRA_OPTIONS} 
                   selected={formData.infra || []} 
                   onChange={(s: string[]) => setFormData((p: Partial<Property>) => ({...p, infra: s}))} 
                   onAddCustomOption={onAddCustomInfraOption}

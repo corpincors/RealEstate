@@ -100,6 +100,7 @@ const App: React.FC = () => {
   useEffect(() => {
     fetchProperties();
     fetchCustomOptions();
+    // console.log("App.tsx - Initial fetch and setup complete."); // Removed log
   }, [fetchProperties, fetchCustomOptions]);
 
   const isClientMode = useMemo(() => {
@@ -157,14 +158,18 @@ const App: React.FC = () => {
   const availableCommOptions = useMemo(() => getUniqueOptions(COMM_OPTIONS, customOptions.commOptions, 'comm'), [getUniqueOptions, customOptions.commOptions]);
   const availableInfraOptions = useMemo(() => getUniqueOptions(INFRA_OPTIONS, customOptions.infraOptions, 'infra'), [getUniqueOptions, customOptions.infraOptions]);
 
+  // Add a separate useEffect for logging availableComfortOptions
+  useEffect(() => {
+    // console.log("App.tsx - availableComfortOptions (for filters and form):", availableComfortOptions); // Removed log
+  }, [availableComfortOptions]);
 
   // Functions to add custom options
   const handleAddCustomOption = useCallback((category: keyof typeof customOptions, option: string) => {
-    console.log(`[App] Adding custom option: ${option} to category: ${category}`);
+    // console.log(`[App] Adding custom option: ${option} to category: ${category}`); // Removed log
     setCustomOptions(prev => {
       const updatedCategory = Array.from(new Set([...prev[category], option])).sort();
       const updatedOptions = { ...prev, [category]: updatedCategory };
-      console.log(`[App] New customOptions state for ${category}:`, updatedCategory);
+      // console.log(`[App] New customOptions state for ${category}:`, updatedCategory); // Removed log
       updateCustomOptionsOnServer(updatedOptions);
       return updatedOptions;
     });
@@ -172,10 +177,10 @@ const App: React.FC = () => {
 
   // Functions to remove custom options
   const handleRemoveCustomOption = useCallback((category: keyof typeof customOptions, optionToRemove: string, initialConstants: string[]) => {
-    console.log(`[App] Attempting to remove custom option: ${optionToRemove} from category: ${category}`);
+    // console.log(`[App] Attempting to remove custom option: ${optionToRemove} from category: ${category}`); // Removed log
     if (initialConstants.includes(optionToRemove)) {
       showError(`Нельзя удалить предопределенную опцию "${optionToRemove}".`);
-      console.warn(`[App] Attempted to remove constant option: ${optionToRemove}`);
+      // console.warn(`[App] Attempted to remove constant option: ${optionToRemove}`); // Removed log
       return;
     }
     if (!window.confirm(`Вы уверены, что хотите удалить пользовательскую опцию "${optionToRemove}"?`)) {
@@ -185,7 +190,7 @@ const App: React.FC = () => {
     setCustomOptions(prev => {
       const updatedCategory = prev[category].filter(opt => opt !== optionToRemove);
       const updatedOptions = { ...prev, [category]: updatedCategory };
-      console.log(`[App] New customOptions state for ${category} after removal:`, updatedCategory);
+      // console.log(`[App] New customOptions state for ${category} after removal:`, updatedCategory); // Removed log
       updateCustomOptionsOnServer(updatedOptions);
       return updatedOptions;
     });

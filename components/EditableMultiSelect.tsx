@@ -16,12 +16,12 @@ interface EditableMultiSelectProps {
 const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({ 
   label, 
   prefix, 
-  initialOptions, // Now includes all options
-  constantOptions = [], // Добавлено значение по умолчанию
+  initialOptions, // Destructure here
+  constantOptions = [], 
   selected, 
   onChange,
   onAddCustomOption,
-  onRemoveOption, // Destructure new prop
+  onRemoveOption, 
   accentColor = 'blue'
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,8 +41,8 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
 
   // Add this useEffect for debugging
   useEffect(() => {
-    console.log(`[${label}] EditableMultiSelect - initialOptions:`, initialOptions);
-    console.log(`[${label}] EditableMultiSelect - selected:`, selected);
+    // console.log(`EditableMultiSelect (${label}) - initialOptions prop received:`, initialOptions); // Removed log
+    // console.log(`EditableMultiSelect (${label}) - selected prop received:`, selected); // Removed log
   }, [initialOptions, selected, label]);
 
   const filteredOptions = useMemo(() => {
@@ -100,7 +100,7 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
         type="button"
         onClick={() => {
           setIsOpen(!isOpen);
-          console.log(`[${label}] EditableMultiSelect: Toggling dropdown. New state: ${!isOpen}`);
+          // console.log(`[${label}] EditableMultiSelect: Toggling dropdown. New state: ${!isOpen}`); // Removed log
         }}
         className={`w-full ${bgColorClass} border ${borderColorClass} text-left p-4 rounded-2xl font-bold text-xs flex justify-between items-center transition hover:opacity-80`}
       >
