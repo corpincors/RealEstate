@@ -157,13 +157,13 @@ const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({ properties }) =
                   <li className="flex justify-between"><span>Этаж:</span> <span className="font-semibold">{property.floor || '—'} / {property.totalFloors || '—'}</span></li>
                   <li className="flex justify-between"><span>Общая площадь:</span> <span className="font-semibold">{property.totalArea} м²</span></li>
                   <li className="flex justify-between"><span>Площадь кухни:</span> <span className="font-semibold">{property.kitchenArea || '—'} м²</span></li>
-                  {/* <li className="flex justify-between"><span>Тип дома:</span> <span className="font-semibold">{property.houseType}</span></li> */} {/* Удалено */}
                   <li className="flex justify-between"><span>Класс жилья:</span> <span className="font-semibold">{property.housingClass}</span></li>
                   <li className="flex justify-between"><span>Ремонт:</span> <span className="font-semibold">{property.hasRepair ? property.repairType : 'Без ремонта'}</span></li>
                   <li className="flex justify-between"><span>Отопление:</span> <span className="font-semibold">{property.heating}</span></li>
                   <li className="flex justify-between"><span>Меблировка:</span> <span className="font-semibold">{property.hasFurniture ? 'Да' : 'Нет'}</span></li>
                   {property.yearBuilt && <li className="flex justify-between"><span>Год постройки/сдачи:</span> <span className="font-semibold">{property.yearBuilt}</span></li>}
                   {property.wallType && <li className="flex justify-between"><span>Тип стен:</span> <span className="font-semibold">{property.wallType}</span></li>}
+                  {property.bathroomType && <li className="flex justify-between"><span>Санузел:</span> <span className="font-semibold">{property.bathroomType}</span></li>} {/* Новое поле */}
                 </>
               )}
               {property.category === 'land' && (

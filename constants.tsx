@@ -67,3 +67,9 @@ export const WALL_TYPE_OPTIONS = [
   'Газоблок',
   'Сип панель'
 ];
+
+export const BATHROOM_OPTIONS = [
+  'Раздельный',
+  'Смежный',
+  '2 и более'
+];

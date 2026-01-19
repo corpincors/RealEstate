@@ -33,6 +33,7 @@ export interface Property {
   cadastralNumber?: string; // Новое поле: Кадастровый номер
   yearBuilt?: string; // Новое поле: Год постройки/сдачи
   wallType?: string; // Новое поле: Тип стен
+  bathroomType?: string; // Новое поле: Тип санузла
   description: string;
   imageUrls: string[];
   publicLink?: string; // Added field for the public client link
@@ -68,6 +69,7 @@ export interface FilterState {
   distanceFromCityKm: string; // Изменено на одно поле для фильтрации по расстоянию от города
   yearBuilt: string; // Добавлено поле для фильтрации по году постройки
   wallType: string; // Добавлено поле для фильтрации по типу стен
+  bathroomType: string; // Новое поле: Тип санузла
   tech: string[];
   comfort: string[];
   comm: string[];

@@ -2,10 +2,10 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate, Link } from 'react-router-dom';
 import { Property, FilterState, PropertyCategory } from './types';
 import { 
-  ROOMS_OPTIONS, LAND_TYPES, // HOUSE_TYPES удален
+  ROOMS_OPTIONS, LAND_TYPES, 
   REPAIR_TYPES, HOUSING_CLASSES, HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, 
   COMM_OPTIONS, INFRA_OPTIONS, CATEGORIES, INITIAL_DISTRICTS, HOUSE_TYPES_EXTENDED, LOCATION_TYPES,
-  YEAR_BUILT_OPTIONS, WALL_TYPE_OPTIONS
+  YEAR_BUILT_OPTIONS, WALL_TYPE_OPTIONS, BATHROOM_OPTIONS
 } from './constants.tsx';
 import { PlusCircle, Search, Plus, Home, LogOut, ChevronDown, Users } from './components/Icons';
 import PropertyCard from './components/PropertyCard';
@@ -75,12 +75,12 @@ const App: React.FC = () => {
   }, [properties]);
 
   const availableDistricts = useMemo(() => getUniqueOptions(INITIAL_DISTRICTS, 'district'), [getUniqueOptions]);
-  // const availableHouseTypes = useMemo(() => getUniqueOptions(HOUSE_TYPES, 'houseType'), [getUniqueOptions]); // Удалено
   const availableHousingClasses = useMemo(() => getUniqueOptions(HOUSING_CLASSES, 'housingClass'), [getUniqueOptions]);
   const availableRepairTypes = useMemo(() => getUniqueOptions(REPAIR_TYPES, 'repairType'), [getUniqueOptions]);
   const availableHeatingOptions = useMemo(() => getUniqueOptions(HEATING_OPTIONS, 'heating'), [getUniqueOptions]);
   const availableYearBuiltOptions = useMemo(() => getUniqueOptions(YEAR_BUILT_OPTIONS, 'yearBuilt'), [getUniqueOptions]);
   const availableWallTypeOptions = useMemo(() => getUniqueOptions(WALL_TYPE_OPTIONS, 'wallType'), [getUniqueOptions]);
+  const availableBathroomOptions = useMemo(() => getUniqueOptions(BATHROOM_OPTIONS, 'bathroomType'), [getUniqueOptions]);
 
 
   const handleRemoveCustomDistrict = async (districtToRemove: string) => {
@@ -125,7 +125,6 @@ const App: React.FC = () => {
     maxTotalFloors: '',
     rooms: 'Любое',
     type: 'Любой',
-    // houseType: 'Любой', // Удалено
     housingClass: 'Любой',
     hasFurniture: null,
     hasRepair: null,
@@ -138,8 +137,9 @@ const App: React.FC = () => {
     houseSubtype: 'Любой',
     locationType: 'Любой',
     distanceFromCityKm: '',
-    yearBuilt: 'Любой', // Инициализация нового поля фильтра
-    wallType: 'Любой', // Инициализация нового поля фильтра
+    yearBuilt: 'Любой',
+    wallType: 'Любой',
+    bathroomType: 'Любой', // Инициализация нового поля фильтра
     tech: [],
     comfort: [],
     comm: [],
@@ -179,15 +179,15 @@ const App: React.FC = () => {
         if (filters.maxArea && p.totalArea > Number(filters.maxArea)) return false;
         if (filters.minKitchenArea && (p.kitchenArea || 0) < Number(filters.minKitchenArea)) return false;
         if (filters.maxKitchenArea && (p.kitchenArea || 0) > Number(filters.maxKitchenArea)) return false;
-        // if (filters.houseType !== 'Любой' && p.houseType !== filters.houseType) return false; // Удалено
         if (filters.housingClass !== 'Любой' && p.housingClass !== filters.housingClass) return false;
         if (filters.hasFurniture !== null && p.hasFurniture !== filters.hasFurniture) return false;
         if (filters.hasRepair !== null && p.hasRepair !== filters.hasRepair) return false;
         if (filters.repairType !== 'Любой' && p.repairType !== filters.repairType) return false;
         if (filters.heating !== 'Любой' && p.heating !== filters.heating) return false;
         if (filters.isEOselya !== null && p.isEOselya !== filters.isEOselya) return false;
-        if (filters.yearBuilt !== 'Любой' && p.yearBuilt !== filters.yearBuilt) return false; // Новый фильтр
-        if (filters.wallType !== 'Любой' && p.wallType !== filters.wallType) return false; // Новый фильтр
+        if (filters.yearBuilt !== 'Любой' && p.yearBuilt !== filters.yearBuilt) return false;
+        if (filters.wallType !== 'Любой' && p.wallType !== filters.wallType) return false;
+        if (filters.bathroomType !== 'Любой' && p.bathroomType !== filters.bathroomType) return false; // Новый фильтр
 
         // New filter for houseSubtype (now "Тип дома")
         if (filters.category === 'houses' && filters.houseSubtype !== 'Любой' && p.houseSubtype !== filters.houseSubtype) return false;
@@ -260,15 +260,15 @@ const App: React.FC = () => {
       minPrice: '', maxPrice: '', minArea: '', maxArea: '', minKitchenArea: '', maxKitchenArea: '',
       minFloor: '', maxFloor: '', minTotalFloors: '', maxTotalFloors: '',
       rooms: 'Любое', type: 'Любой', 
-      // houseType: 'Любой', // Удалено
       housingClass: 'Любой',
       hasFurniture: null, hasRepair: null, repairType: 'Любой', heating: 'Любой',
       isEOselya: null, landType: 'Любой', minLandArea: '', maxLandArea: '',
       houseSubtype: 'Любой',
       locationType: 'Любой',
       distanceFromCityKm: '',
-      yearBuilt: 'Любой', // Сброс нового поля
-      wallType: 'Любой', // Сброс нового поля
+      yearBuilt: 'Любой',
+      wallType: 'Любой',
+      bathroomType: 'Любой', // Сброс нового поля
       tech: [], comfort: [], comm: [], infra: [],
       keywords: '',
     });
@@ -374,6 +374,7 @@ const App: React.FC = () => {
                             distanceFromCityKm: '', // Reset distance on category change
                             yearBuilt: 'Любой', // Сброс года постройки при смене категории
                             wallType: 'Любой', // Сброс типа стен при смене категории
+                            bathroomType: 'Любой', // Сброс типа санузла при смене категории
                           }))} 
                           className={`px-8 py-3.5 rounded-full font-black text-xs uppercase tracking-widest transition-all ${
                             filters.category === cat.id ? 'bg-white text-blue-600 shadow-xl' : 'text-slate-400 hover:text-slate-600'
@@ -516,7 +517,6 @@ const App: React.FC = () => {
                                 <input type="number" placeholder="До" value={filters.maxKitchenArea} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters({...filters, maxKitchenArea: e.target.value})} className="w-1/2 bg-slate-50 rounded-2xl p-4 text-sm font-bold outline-none" />
                               </div>
                             </div>
-                            {/* Удалено поле Тип дома */}
                             <div className="space-y-3">
                               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Класс жилья</label>
                               <select value={filters.housingClass} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, housingClass: e.target.value})} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">
@@ -538,7 +538,6 @@ const App: React.FC = () => {
                                 {availableHeatingOptions.map((h: string) => <option key={h} value={h}>{h}</option>)}
                               </select>
                             </div>
-                            {/* Новые фильтры: Год постройки/сдачи и Тип стен */}
                             <div className="space-y-3">
                               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Год постройки/сдачи</label>
                               <select 
@@ -559,6 +558,17 @@ const App: React.FC = () => {
                               >
                                 <option value="Любой">Любой</option>
                                 {availableWallTypeOptions.map((w: string) => <option key={w} value={w}>{w}</option>)}
+                              </select>
+                            </div>
+                            <div className="space-y-3">
+                              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Санузел</label>
+                              <select 
+                                value={filters.bathroomType}
+                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, bathroomType: e.target.value})}
+                                className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
+                              >
+                                <option value="Любой">Любой</option>
+                                {availableBathroomOptions.map((b: string) => <option key={b} value={b}>{b}</option>)}
                               </select>
                             </div>
                           </div>
@@ -664,12 +674,12 @@ const App: React.FC = () => {
         editingProperty={editingProperty}
         availableDistricts={availableDistricts}
         onRemoveCustomDistrict={handleRemoveCustomDistrict}
-        // availableHouseTypes={availableHouseTypes} // Удалено
         availableHousingClasses={availableHousingClasses}
         availableRepairTypes={availableRepairTypes}
         availableHeatingOptions={availableHeatingOptions}
         availableYearBuiltOptions={availableYearBuiltOptions}
         availableWallTypeOptions={availableWallTypeOptions}
+        availableBathroomOptions={availableBathroomOptions}
       />
     </div>
   );
