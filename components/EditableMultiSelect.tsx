@@ -4,20 +4,24 @@ import { ChevronDown, Plus, X } from './Icons';
 interface EditableMultiSelectProps {
   label: string;
   prefix: string;
-  initialOptions: string[]; // Предопределенные опции
+  initialOptions: string[]; // All available options (constants + custom)
+  constantOptions: string[]; // Original, non-removable constant options
   selected: string[];
   onChange: (selected: string[]) => void;
-  onAddCustomOption: (option: string) => void; // Callback для добавления пользовательской опции
+  onAddCustomOption: (option: string) => void;
+  onRemoveOption: (option: string) => void; // New prop for global removal
   accentColor?: string;
 }
 
 const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({ 
   label, 
   prefix, 
-  initialOptions,
+  initialOptions, // Now includes all options
+  constantOptions, // New prop
   selected, 
   onChange,
-  onAddCustomOption, // Принимаем callback
+  onAddCustomOption,
+  onRemoveOption, // Destructure new prop
   accentColor = 'blue'
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -35,16 +39,12 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Объединяем предопределенные опции с любыми выбранными, которые не входят в предопределенные
-  // Это гарантирует, что ранее сохраненные пользовательские опции видны в выпадающем списке
-  const allAvailableOptions = useMemo(() => {
-    const combined = [...initialOptions, ...selected];
-    return Array.from(new Set(combined.filter(v => typeof v === 'string' && v.trim() !== ''))).sort();
-  }, [initialOptions, selected]);
-
-  const filteredOptions = allAvailableOptions.filter(option =>
-    option.toLowerCase().includes(inputValue.toLowerCase())
-  );
+  // filteredOptions now just uses initialOptions directly, as it's already combined
+  const filteredOptions = useMemo(() => {
+    return initialOptions.filter(option =>
+      option.toLowerCase().includes(inputValue.toLowerCase())
+    );
+  }, [initialOptions, inputValue]);
 
   const toggleOption = (option: string) => {
     if (selected.includes(option)) {
@@ -56,19 +56,25 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
 
   const handleAddCustomOption = () => {
     const trimmedValue = inputValue.trim();
-    if (trimmedValue && !selected.includes(trimmedValue)) {
-      onChange([...selected, trimmedValue]); // Добавляем в выбранные
-      onAddCustomOption(trimmedValue); // Сохраняем в постоянное хранилище
-      setInputValue(''); // Очищаем поле ввода после добавления
-      inputRef.current?.focus(); // Возвращаем фокус на поле ввода
+    if (trimmedValue && !initialOptions.includes(trimmedValue)) { // Check against all initial options
+      onAddCustomOption(trimmedValue);
+      setInputValue('');
+      inputRef.current?.focus();
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      e.preventDefault(); // Предотвращаем отправку формы
+      e.preventDefault();
       handleAddCustomOption();
     }
+  };
+
+  const handleRemove = (e: React.MouseEvent, option: string) => {
+    e.stopPropagation();
+    onRemoveOption(option); // Call the global remove handler
+    // Also deselect if it was selected for the current property
+    onChange(selected.filter(item => item !== option));
   };
 
   const getDisplayText = () => {
@@ -98,7 +104,7 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
       </button>
       
       {isOpen && (
-        <div className="absolute z-50 top-full left-0 w-full bg-white border border-slate-100 shadow-2xl rounded-2xl mt-2 p-5 max-h-64 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute z-50 w-full bg-white border border-slate-100 shadow-2xl rounded-2xl mt-2 p-5 max-h-64 overflow-y-auto custom-scrollbar">
           <div className="flex items-center gap-2 mb-4">
             <input
               ref={inputRef}
@@ -132,15 +138,10 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
                     />
                     <span className="group-hover:text-blue-600 transition-colors">{option}</span>
                   </div>
-                  {selected.includes(option) && (
+                  {!constantOptions.includes(option) && ( // Only show delete for non-constant options
                     <button
                       type="button"
-                      onClick={(e: React.MouseEvent) => {
-                        e.stopPropagation();
-                        onChange(selected.filter(item => item !== option));
-                        // Здесь также нужно вызвать onRemoveCustomOption, если это пользовательская опция
-                        // Но для MultiSelect это обычно не требуется, так как удаление из выбранных не означает удаление из 'initialOptions'
-                      }}
+                      onClick={(e: React.MouseEvent) => handleRemove(e, option)}
                       className="p-1 bg-slate-50 rounded-full hover:bg-red-100 text-slate-400 hover:text-red-600 transition"
                       title="Удалить"
                     >

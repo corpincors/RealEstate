@@ -13,9 +13,9 @@ import PropertyFormModal from './components/PropertyFormModal';
 import MultiSelect from './components/MultiSelect';
 import PropertyDetailPage from './src/pages/PropertyDetailPage';
 import LoginPage from '@/src/pages/LoginPage';
-import ClientsPage from '@/src/pages/ClientsPage'; // Import ClientsPage
+import ClientsPage from '@/src/pages/ClientsPage';
 import { useAuth } from '@/src/context/AuthContext';
-import { showSuccess, showError } from './src/utils/toast'; // Исправлен путь импорта
+import { showSuccess, showError } from './src/utils/toast';
 
 const API_URL = '/api/properties';
 const CUSTOM_OPTIONS_API_URL = '/api/customOptions';
@@ -58,7 +58,7 @@ const App: React.FC = () => {
   const [showAdditionalFilters, setShowAdditionalFilters] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const storedState = localStorage.getItem(ADDITIONAL_FILTERS_STORAGE_KEY);
-      return storedState === 'true'; // По умолчанию закрыто, если не найдено
+      return storedState === 'true';
     }
     return false;
   });
@@ -144,7 +144,7 @@ const App: React.FC = () => {
   const availableWallTypeOptions = useMemo(() => getUniqueOptions(WALL_TYPE_OPTIONS, customOptions.wallTypeOptions, 'wallType'), [getUniqueOptions, customOptions.wallTypeOptions]);
   const availableBathroomOptions = useMemo(() => getUniqueOptions(BATHROOM_OPTIONS, customOptions.bathroomOptions, 'bathroomType'), [getUniqueOptions, customOptions.bathroomOptions]);
 
-  // Динамические списки опций для EditableMultiSelect (для фильтров, не для формы)
+  // Динамические списки опций для EditableMultiSelect (для фильтров и формы)
   const availableTechOptions = useMemo(() => getUniqueOptions(TECH_OPTIONS, customOptions.techOptions, 'tech'), [getUniqueOptions, customOptions.techOptions]);
   const availableComfortOptions = useMemo(() => getUniqueOptions(COMFORT_OPTIONS, customOptions.comfortOptions, 'comfort'), [getUniqueOptions, customOptions.comfortOptions]);
   const availableCommOptions = useMemo(() => getUniqueOptions(COMM_OPTIONS, customOptions.commOptions, 'comm'), [getUniqueOptions, customOptions.commOptions]);
@@ -213,7 +213,7 @@ const App: React.FC = () => {
         return updatedOptions;
       });
 
-      fetchProperties(); // Re-fetch properties to reflect changes
+      fetchProperties(); 
       showSuccess(`Район "${districtToRemove}" успешно удален и объекты обновлены.`);
     } catch (error) {
       console.error("Error removing custom district:", error);
@@ -426,7 +426,7 @@ const App: React.FC = () => {
               >
                 <Users className="w-4 h-4" /> Клиенты
               </Link>
-              {!isDetailPage && !isClientsPage && ( // Show "Add Property" only on main page
+              {!isDetailPage && !isClientsPage && (
                 <button 
                   onClick={() => { setEditingProperty(null); setIsModalOpen(true); }}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 shadow-xl shadow-blue-100 transition-all active:scale-95"
@@ -461,7 +461,7 @@ const App: React.FC = () => {
         <Route path="/" element={
           isAuthenticated || isClientMode ? (
             <>
-              {!isDetailPage && !isClientsPage && ( // Hide filters on detail and clients page
+              {!isDetailPage && !isClientsPage && (
                 <section className="bg-white p-8 lg:p-12 rounded-[3.5rem] shadow-sm border border-slate-50 mb-12">
                   <div className="grid grid-cols-1 gap-12">
                     <div className="space-y-3">
@@ -482,12 +482,12 @@ const App: React.FC = () => {
                           onClick={() => setFilters(prev => ({ 
                             ...prev, 
                             category: cat.id as PropertyCategory, 
-                            houseSubtype: 'Любой', // Reset houseSubtype on category change
-                            locationType: 'Любой', // Reset locationType on category change
-                            distanceFromCityKm: '', // Reset distance on category change
-                            yearBuilt: 'Любой', // Сброс года постройки при смене категории
-                            wallType: 'Любой', // Сброс типа стен при смене категории
-                            bathroomType: 'Любой', // Сброс типа санузла при смене категории
+                            houseSubtype: 'Любой',
+                            locationType: 'Любой',
+                            distanceFromCityKm: '',
+                            yearBuilt: 'Любой',
+                            wallType: 'Любой',
+                            bathroomType: 'Любой',
                           }))} 
                           className={`px-8 py-3.5 rounded-full font-black text-xs uppercase tracking-widest transition-all ${
                             filters.category === cat.id ? 'bg-white text-blue-600 shadow-xl' : 'text-slate-400 hover:text-slate-600'
@@ -499,7 +499,7 @@ const App: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-10">
-                      {isHouses && ( // Moved "Расположение" here
+                      {isHouses && (
                         <div className="space-y-3">
                           <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Расположение</label>
                           <select 
@@ -512,7 +512,7 @@ const App: React.FC = () => {
                           </select>
                         </div>
                       )}
-                      {isHouses && filters.locationType === 'За городом' && ( // Moved "От города (км)" here
+                      {isHouses && filters.locationType === 'За городом' && (
                         <div className="space-y-3">
                           <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">От города (км)</label>
                           <input 
@@ -520,7 +520,7 @@ const App: React.FC = () => {
                             placeholder="До" 
                             value={filters.distanceFromCityKm} 
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters({...filters, distanceFromCityKm: e.target.value})} 
-                            className="w-full bg-slate-50 rounded-2xl p-4 text-sm font-bold outline-none" 
+                            className="w-1/2 bg-slate-50 rounded-2xl p-4 text-sm font-bold outline-none" 
                           />
                         </div>
                       )}
@@ -747,7 +747,7 @@ const App: React.FC = () => {
                 </section>
               )}
 
-              {!isClientsPage && ( // Hide property cards on clients page
+              {!isClientsPage && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                   {filteredProperties.map((property: Property) => (
                     <PropertyCard 
@@ -787,37 +787,45 @@ const App: React.FC = () => {
         editingProperty={editingProperty}
         
         availableDistricts={availableDistricts}
-        onAddCustomDistrict={(option) => handleAddCustomOption('districts', option)}
+        onAddCustomDistrict={(option: string) => handleAddCustomOption('districts', option)}
         onRemoveCustomDistrict={handleRemoveCustomDistrict}
 
         availableHousingClasses={availableHousingClasses}
-        onAddCustomHousingClass={(option) => handleAddCustomOption('housingClasses', option)}
-        onRemoveCustomHousingClass={(option) => handleRemoveCustomOption('housingClasses', option, HOUSING_CLASSES)}
+        onAddCustomHousingClass={(option: string) => handleAddCustomOption('housingClasses', option)}
+        onRemoveCustomHousingClass={(option: string) => handleRemoveCustomOption('housingClasses', option, HOUSING_CLASSES)}
 
         availableRepairTypes={availableRepairTypes}
-        onAddCustomRepairType={(option) => handleAddCustomOption('repairTypes', option)}
-        onRemoveCustomRepairType={(option) => handleRemoveCustomOption('repairTypes', option, REPAIR_TYPES)}
+        onAddCustomRepairType={(option: string) => handleAddCustomOption('repairTypes', option)}
+        onRemoveCustomRepairType={(option: string) => handleRemoveCustomOption('repairTypes', option, REPAIR_TYPES)}
 
         availableHeatingOptions={availableHeatingOptions}
-        onAddCustomHeatingOption={(option) => handleAddCustomOption('heatingOptions', option)}
-        onRemoveCustomHeatingOption={(option) => handleRemoveCustomOption('heatingOptions', option, HEATING_OPTIONS)}
+        onAddCustomHeatingOption={(option: string) => handleAddCustomOption('heatingOptions', option)}
+        onRemoveCustomHeatingOption={(option: string) => handleRemoveCustomOption('heatingOptions', option, HEATING_OPTIONS)}
 
         availableYearBuiltOptions={availableYearBuiltOptions}
-        onAddCustomYearBuiltOption={(option) => handleAddCustomOption('yearBuiltOptions', option)}
-        onRemoveCustomYearBuiltOption={(option) => handleRemoveCustomOption('yearBuiltOptions', option, YEAR_BUILT_OPTIONS)}
+        onAddCustomYearBuiltOption={(option: string) => handleAddCustomOption('yearBuiltOptions', option)}
+        onRemoveCustomYearBuiltOption={(option: string) => handleRemoveCustomOption('yearBuiltOptions', option, YEAR_BUILT_OPTIONS)}
 
         availableWallTypeOptions={availableWallTypeOptions}
-        onAddCustomWallTypeOption={(option) => handleAddCustomOption('wallTypeOptions', option)}
-        onRemoveCustomWallTypeOption={(option) => handleRemoveCustomOption('wallTypeOptions', option, WALL_TYPE_OPTIONS)}
+        onAddCustomWallTypeOption={(option: string) => handleAddCustomOption('wallTypeOptions', option)}
+        onRemoveCustomWallTypeOption={(option: string) => handleRemoveCustomOption('wallTypeOptions', option, WALL_TYPE_OPTIONS)}
 
         availableBathroomOptions={availableBathroomOptions}
-        onAddCustomBathroomOption={(option) => handleAddCustomOption('bathroomOptions', option)}
-        onRemoveCustomBathroomOption={(option) => handleRemoveCustomOption('bathroomOptions', option, BATHROOM_OPTIONS)}
+        onAddCustomBathroomOption={(option: string) => handleAddCustomOption('bathroomOptions', option)}
+        onRemoveCustomBathroomOption={(option: string) => handleRemoveCustomOption('bathroomOptions', option, BATHROOM_OPTIONS)}
 
-        onAddCustomTechOption={(option) => handleAddCustomOption('techOptions', option)}
-        onAddCustomComfortOption={(option) => handleAddCustomOption('comfortOptions', option)}
-        onAddCustomCommOption={(option) => handleAddCustomOption('commOptions', option)}
-        onAddCustomInfraOption={(option) => handleAddCustomOption('infraOptions', option)}
+        availableTechOptions={availableTechOptions}
+        onAddCustomTechOption={(option: string) => handleAddCustomOption('techOptions', option)}
+        onRemoveCustomTechOption={(option: string) => handleRemoveCustomOption('techOptions', option, TECH_OPTIONS)} 
+        availableComfortOptions={availableComfortOptions}
+        onAddCustomComfortOption={(option: string) => handleAddCustomOption('comfortOptions', option)}
+        onRemoveCustomComfortOption={(option: string) => handleRemoveCustomOption('comfortOptions', option, COMFORT_OPTIONS)} 
+        availableCommOptions={availableCommOptions}
+        onAddCustomCommOption={(option: string) => handleAddCustomOption('commOptions', option)}
+        onRemoveCustomCommOption={(option: string) => handleRemoveCustomOption('commOptions', option, COMM_OPTIONS)} 
+        availableInfraOptions={availableInfraOptions}
+        onAddCustomInfraOption={(option: string) => handleAddCustomOption('infraOptions', option)}
+        onRemoveCustomInfraOption={(option: string) => handleRemoveCustomOption('infraOptions', option, INFRA_OPTIONS)} 
       />
     </div>
   );
