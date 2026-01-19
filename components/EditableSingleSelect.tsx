@@ -83,7 +83,7 @@ const EditableSingleSelect: React.FC<EditableSingleSelectProps> = ({
 
   return (
     <div className="relative space-y-2" ref={containerRef}>
-      <label className={`text-[10px] font-black text-${accentColor}-500 uppercase tracking-wider ml-1`}>
+      <label className={`text-[10px] font-black text-slate-900 uppercase tracking-wider ml-1`}>
         {label}
       </label>
       <button
@@ -91,8 +91,8 @@ const EditableSingleSelect: React.FC<EditableSingleSelectProps> = ({
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full ${bgColorClass} border ${borderColorClass} text-left p-4 rounded-2xl font-bold text-xs flex justify-between items-center transition hover:opacity-80`}
       >
-        <span className={`truncate ${selected ? `text-${accentColor}-600` : 'text-slate-700'}`}>
-          {selected || 'Выберите или введите...'}
+        <span className={`truncate ${selected ? `text-slate-900` : 'text-slate-700'}`}>
+          {selected || 'Выберите...'}
         </span>
         <ChevronDown className={`w-4 h-4 shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
@@ -125,7 +125,7 @@ const EditableSingleSelect: React.FC<EditableSingleSelectProps> = ({
                 <div key={option} className="flex items-center justify-between gap-3 text-xs font-semibold cursor-pointer group">
                   <span
                     onClick={() => handleSelect(option)}
-                    className={`flex-grow transition-colors ${selected === option ? `text-${accentColor}-600` : 'group-hover:text-blue-600'}`}
+                    className={`flex-grow transition-colors ${selected === option ? `text-slate-900` : 'group-hover:text-blue-600'}`}
                   >
                     {option}
                   </span>

@@ -44,9 +44,7 @@
   "customOptions": {
     "districts": [],
     "housingClasses": [],
-    "repairTypes": [
-      "123"
-    ],
+    "repairTypes": [],
     "heatingOptions": [],
     "yearBuiltOptions": [],
     "wallTypeOptions": [],
