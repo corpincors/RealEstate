@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Property } from '../types';
 import { X, Home, Layers, Camera, Plus, Phone } from './Icons';
-// import MultiSelect from './MultiSelect'; // Удален неиспользуемый импорт
-import EditableMultiSelect from './EditableMultiSelect'; // Импортируем новый компонент
-import SingleSelectWithDelete from './SingleSelectWithDelete';
+import EditableMultiSelect from './EditableMultiSelect';
+import EditableSingleSelect from './EditableSingleSelect'; // Используем переименованный компонент
 import { 
   LAND_TYPES, REPAIR_TYPES, HOUSING_CLASSES,
   HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, COMM_OPTIONS, INFRA_OPTIONS,
-  INITIAL_DISTRICTS, HOUSE_TYPES_EXTENDED, YEAR_BUILT_OPTIONS, WALL_TYPE_OPTIONS, BATHROOM_OPTIONS
+  HOUSE_TYPES_EXTENDED, YEAR_BUILT_OPTIONS, WALL_TYPE_OPTIONS, BATHROOM_OPTIONS // Удален INITIAL_DISTRICTS
 } from '../constants.tsx';
 
 interface PropertyFormModalProps {
@@ -15,14 +14,39 @@ interface PropertyFormModalProps {
   onClose: () => void;
   onSave: (property: Property) => void;
   editingProperty: Property | null;
+
   availableDistricts: string[];
+  onAddCustomDistrict: (option: string) => void;
   onRemoveCustomDistrict: (district: string) => void;
+
   availableHousingClasses: string[];
+  onAddCustomHousingClass: (option: string) => void;
+  onRemoveCustomHousingClass: (option: string) => void;
+
   availableRepairTypes: string[];
+  onAddCustomRepairType: (option: string) => void;
+  onRemoveCustomRepairType: (option: string) => void;
+
   availableHeatingOptions: string[];
+  onAddCustomHeatingOption: (option: string) => void;
+  onRemoveCustomHeatingOption: (option: string) => void;
+
   availableYearBuiltOptions: string[];
+  onAddCustomYearBuiltOption: (option: string) => void;
+  onRemoveCustomYearBuiltOption: (option: string) => void;
+
   availableWallTypeOptions: string[];
+  onAddCustomWallTypeOption: (option: string) => void;
+  onRemoveCustomWallTypeOption: (option: string) => void;
+
   availableBathroomOptions: string[];
+  onAddCustomBathroomOption: (option: string) => void;
+  onRemoveCustomBathroomOption: (option: string) => void;
+
+  onAddCustomTechOption: (option: string) => void;
+  onAddCustomComfortOption: (option: string) => void;
+  onAddCustomCommOption: (option: string) => void;
+  onAddCustomInfraOption: (option: string) => void;
 }
 
 const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ 
@@ -31,13 +55,30 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
   onSave, 
   editingProperty,
   availableDistricts,
+  onAddCustomDistrict,
   onRemoveCustomDistrict,
   availableHousingClasses,
+  onAddCustomHousingClass,
+  onRemoveCustomHousingClass,
   availableRepairTypes,
+  onAddCustomRepairType,
+  onRemoveCustomRepairType,
   availableHeatingOptions,
+  onAddCustomHeatingOption,
+  onRemoveCustomHeatingOption,
   availableYearBuiltOptions,
+  onAddCustomYearBuiltOption,
+  onRemoveCustomYearBuiltOption,
   availableWallTypeOptions,
+  onAddCustomWallTypeOption,
+  onRemoveCustomWallTypeOption,
   availableBathroomOptions,
+  onAddCustomBathroomOption,
+  onRemoveCustomBathroomOption,
+  onAddCustomTechOption,
+  onAddCustomComfortOption,
+  onAddCustomCommOption,
+  onAddCustomInfraOption,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<Partial<Property>>({
@@ -49,7 +90,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     ownerPhone: '',
     totalArea: 0,
     rooms: '1',
-    housingClass: 'Комфорт',
+    housingClass: HOUSING_CLASSES[0], // Используем первую опцию из констант
     hasFurniture: false,
     hasRepair: false,
     repairType: REPAIR_TYPES[0],
@@ -66,9 +107,9 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     distanceFromCityKm: undefined,
     plotArea: undefined,
     cadastralNumber: '',
-    yearBuilt: '',
-    wallType: '',
-    bathroomType: BATHROOM_OPTIONS[0],
+    yearBuilt: YEAR_BUILT_OPTIONS[0], // Используем первую опцию из констант
+    wallType: WALL_TYPE_OPTIONS[0],   // Используем первую опцию из констант
+    bathroomType: BATHROOM_OPTIONS[0], // Используем первую опцию из констант
   });
 
   useEffect(() => {
@@ -84,11 +125,11 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
         ownerPhone: '',
         totalArea: 0,
         rooms: '1',
-        housingClass: 'Комфорт',
+        housingClass: availableHousingClasses[0] || HOUSING_CLASSES[0],
         hasFurniture: false,
         hasRepair: false,
-        repairType: REPAIR_TYPES[0],
-        heating: HEATING_OPTIONS[0],
+        repairType: availableRepairTypes[0] || REPAIR_TYPES[0],
+        heating: availableHeatingOptions[0] || HEATING_OPTIONS[0],
         tech: [],
         comfort: [],
         comm: [],
@@ -101,12 +142,15 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
         distanceFromCityKm: undefined,
         plotArea: undefined,
         cadastralNumber: '',
-        yearBuilt: '',
-        wallType: '',
-        bathroomType: BATHROOM_OPTIONS[0],
+        yearBuilt: availableYearBuiltOptions[0] || YEAR_BUILT_OPTIONS[0],
+        wallType: availableWallTypeOptions[0] || WALL_TYPE_OPTIONS[0],
+        bathroomType: availableBathroomOptions[0] || BATHROOM_OPTIONS[0],
       });
     }
-  }, [editingProperty, isOpen]);
+  }, [editingProperty, isOpen, 
+      availableHousingClasses, availableRepairTypes, availableHeatingOptions,
+      availableYearBuiltOptions, availableWallTypeOptions, availableBathroomOptions
+  ]);
 
   if (!isOpen) return null;
 
@@ -136,9 +180,9 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
       distanceFromCityKm: newCategory === 'houses' ? undefined : undefined,
       plotArea: newCategory === 'houses' ? undefined : undefined,
       cadastralNumber: newCategory === 'houses' ? '' : undefined,
-      yearBuilt: newCategory === 'land' ? undefined : '',
-      wallType: newCategory === 'land' ? undefined : '',
-      bathroomType: newCategory === 'land' ? undefined : BATHROOM_OPTIONS[0],
+      yearBuilt: newCategory === 'land' ? undefined : (availableYearBuiltOptions[0] || YEAR_BUILT_OPTIONS[0]),
+      wallType: newCategory === 'land' ? undefined : (availableWallTypeOptions[0] || WALL_TYPE_OPTIONS[0]),
+      bathroomType: newCategory === 'land' ? undefined : (availableBathroomOptions[0] || BATHROOM_OPTIONS[0]),
     }));
   };
 
@@ -341,14 +385,13 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
               </>
             )}
 
-            {/* Обернуто SingleSelectWithDelete в div.space-y-2 для выравнивания */}
             <div className="space-y-2">
-              <SingleSelectWithDelete
+              <EditableSingleSelect
                 label="Район"
-                options={availableDistricts}
-                initialOptions={INITIAL_DISTRICTS}
+                initialOptions={availableDistricts}
                 selected={formData.district || ''}
                 onChange={handleDistrictChange}
+                onAddCustomOption={onAddCustomDistrict}
                 onRemoveOption={onRemoveCustomDistrict}
               />
             </div>
@@ -467,12 +510,11 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                   <input 
                     type="number"
                     name="rooms"
-                    // Если formData.rooms - нечисловое значение ('Студия', '5+'), отображаем пустую строку
                     value={['Студия', '5+'].includes(formData.rooms || '') ? '' : formData.rooms}
                     onChange={handleChange}
                     placeholder="Количество комнат"
                     className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
-                    min="1" // Минимальное количество комнат
+                    min="1"
                   />
                 </div>
                 <div className="space-y-2">
@@ -490,63 +532,63 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <SingleSelectWithDelete
+                  <EditableSingleSelect
                     label="Класс жилья"
-                    options={availableHousingClasses}
-                    initialOptions={HOUSING_CLASSES}
+                    initialOptions={availableHousingClasses}
                     selected={formData.housingClass || ''}
                     onChange={handleHousingClassChange}
-                    onRemoveOption={() => {}}
+                    onAddCustomOption={onAddCustomHousingClass}
+                    onRemoveOption={onRemoveCustomHousingClass}
                   />
                 </div>
                 <div className="space-y-2">
-                  <SingleSelectWithDelete
+                  <EditableSingleSelect
                     label="Вид ремонта"
-                    options={availableRepairTypes}
-                    initialOptions={REPAIR_TYPES}
+                    initialOptions={availableRepairTypes}
                     selected={formData.repairType || ''}
                     onChange={handleRepairTypeChange}
-                    onRemoveOption={() => {}}
+                    onAddCustomOption={onAddCustomRepairType}
+                    onRemoveOption={onRemoveCustomRepairType}
                   />
                 </div>
                 <div className="space-y-2">
-                  <SingleSelectWithDelete
+                  <EditableSingleSelect
                     label="Отопление"
-                    options={availableHeatingOptions}
-                    initialOptions={HEATING_OPTIONS}
+                    initialOptions={availableHeatingOptions}
                     selected={formData.heating || ''}
                     onChange={handleHeatingChange}
-                    onRemoveOption={() => {}}
+                    onAddCustomOption={onAddCustomHeatingOption}
+                    onRemoveOption={onRemoveCustomHeatingOption}
                   />
                 </div>
                 <div className="space-y-2">
-                  <SingleSelectWithDelete
+                  <EditableSingleSelect
                     label="Год постройки/сдачи"
-                    options={availableYearBuiltOptions}
-                    initialOptions={YEAR_BUILT_OPTIONS}
+                    initialOptions={availableYearBuiltOptions}
                     selected={formData.yearBuilt || ''}
                     onChange={handleYearBuiltChange}
-                    onRemoveOption={() => {}}
+                    onAddCustomOption={onAddCustomYearBuiltOption}
+                    onRemoveOption={onRemoveCustomYearBuiltOption}
                   />
                 </div>
                 <div className="space-y-2">
-                  <SingleSelectWithDelete
+                  <EditableSingleSelect
                     label="Тип стен"
-                    options={availableWallTypeOptions}
-                    initialOptions={WALL_TYPE_OPTIONS}
+                    initialOptions={availableWallTypeOptions}
                     selected={formData.wallType || ''}
                     onChange={handleWallTypeChange}
-                    onRemoveOption={() => {}}
+                    onAddCustomOption={onAddCustomWallTypeOption}
+                    onRemoveOption={onRemoveCustomWallTypeOption}
                   />
                 </div>
                 <div className="space-y-2">
-                  <SingleSelectWithDelete
+                  <EditableSingleSelect
                     label="Санузел"
-                    options={availableBathroomOptions}
-                    initialOptions={BATHROOM_OPTIONS}
+                    initialOptions={availableBathroomOptions}
                     selected={formData.bathroomType || ''}
                     onChange={handleBathroomTypeChange}
-                    onRemoveOption={() => {}}
+                    onAddCustomOption={onAddCustomBathroomOption}
+                    onRemoveOption={onRemoveCustomBathroomOption}
                   />
                 </div>
               </div>
@@ -588,30 +630,34 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                 <EditableMultiSelect 
                   label="Бытовая техника" 
                   prefix="Выбрано" 
-                  initialOptions={TECH_OPTIONS} // Передаем предопределенные опции
+                  initialOptions={TECH_OPTIONS}
                   selected={formData.tech || []} 
                   onChange={(s: string[]) => setFormData(p => ({...p, tech: s}))} 
+                  onAddCustomOption={onAddCustomTechOption}
                 />
                 <EditableMultiSelect 
                   label="Комфорт" 
                   prefix="Выбрано" 
-                  initialOptions={COMFORT_OPTIONS} // Передаем предопределенные опции
+                  initialOptions={COMFORT_OPTIONS}
                   selected={formData.comfort || []} 
                   onChange={(s: string[]) => setFormData(p => ({...p, comfort: s}))} 
+                  onAddCustomOption={onAddCustomComfortOption}
                 />
                 <EditableMultiSelect 
                   label="Коммуникации" 
                   prefix="Выбрано" 
-                  initialOptions={COMM_OPTIONS} // Передаем предопределенные опции
+                  initialOptions={COMM_OPTIONS}
                   selected={formData.comm || []} 
                   onChange={(s: string[]) => setFormData(p => ({...p, comm: s}))} 
+                  onAddCustomOption={onAddCustomCommOption}
                 />
                 <EditableMultiSelect 
                   label="Инфраструктура" 
                   prefix="Выбрано" 
-                  initialOptions={INFRA_OPTIONS} // Передаем предопределенные опции
+                  initialOptions={INFRA_OPTIONS}
                   selected={formData.infra || []} 
                   onChange={(s: string[]) => setFormData(p => ({...p, infra: s}))} 
+                  onAddCustomOption={onAddCustomInfraOption}
                 />
               </div>
             </section>

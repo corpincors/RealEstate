@@ -15,8 +15,10 @@ import PropertyDetailPage from './src/pages/PropertyDetailPage';
 import LoginPage from '@/src/pages/LoginPage';
 import ClientsPage from '@/src/pages/ClientsPage'; // Import ClientsPage
 import { useAuth } from '@/src/context/AuthContext';
+import { showSuccess, showError } from './src/utils/toast'; // Исправлен путь импорта
 
 const API_URL = '/api/properties';
+const CUSTOM_OPTIONS_API_URL = '/api/customOptions';
 const ADDITIONAL_FILTERS_STORAGE_KEY = 'realty_crm_additional_filters_open';
 
 const App: React.FC = () => {
@@ -26,6 +28,32 @@ const App: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, logout } = useAuth();
+
+  const [customOptions, setCustomOptions] = useState<{
+    districts: string[];
+    housingClasses: string[];
+    repairTypes: string[];
+    heatingOptions: string[];
+    yearBuiltOptions: string[];
+    wallTypeOptions: string[];
+    bathroomOptions: string[];
+    techOptions: string[];
+    comfortOptions: string[];
+    commOptions: string[];
+    infraOptions: string[];
+  }>({
+    districts: [],
+    housingClasses: [],
+    repairTypes: [],
+    heatingOptions: [],
+    yearBuiltOptions: [],
+    wallTypeOptions: [],
+    bathroomOptions: [],
+    techOptions: [],
+    comfortOptions: [],
+    commOptions: [],
+    infraOptions: []
+  });
 
   const [showAdditionalFilters, setShowAdditionalFilters] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -51,12 +79,28 @@ const App: React.FC = () => {
       setProperties(data);
     } catch (error) {
       console.error("Failed to fetch properties:", error);
+      showError("Не удалось загрузить список объектов.");
+    }
+  }, []);
+
+  const fetchCustomOptions = useCallback(async () => {
+    try {
+      const response = await fetch(CUSTOM_OPTIONS_API_URL);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setCustomOptions(data);
+    } catch (error) {
+      console.error("Failed to fetch custom options:", error);
+      showError("Не удалось загрузить пользовательские опции.");
     }
   }, []);
 
   useEffect(() => {
     fetchProperties();
-  }, [fetchProperties]);
+    fetchCustomOptions();
+  }, [fetchProperties, fetchCustomOptions]);
 
   const isClientMode = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -67,23 +111,80 @@ const App: React.FC = () => {
   const isClientsPage = useMemo(() => location.pathname === '/clients', [location.pathname]);
   const isPropertiesPage = useMemo(() => location.pathname === '/', [location.pathname]);
 
+  const updateCustomOptionsOnServer = useCallback(async (updatedOptions: typeof customOptions) => {
+    try {
+      const response = await fetch(CUSTOM_OPTIONS_API_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedOptions),
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to update custom options: ${response.status}`);
+      }
+      setCustomOptions(updatedOptions);
+      showSuccess('Пользовательские опции обновлены!');
+    } catch (error) {
+      console.error("Error updating custom options:", error);
+      showError('Ошибка при обновлении пользовательских опций.');
+    }
+  }, []);
 
-  const getUniqueOptions = useCallback((initialOptions: string[], propertyField: keyof Property) => {
+  const getUniqueOptions = useCallback((initialConstants: string[], customList: string[], propertyField: keyof Property) => {
     const propertyValues = properties.map((p: Property) => p[propertyField]).filter(Boolean) as string[];
-    const combined = [...initialOptions, ...propertyValues];
+    const combined = [...initialConstants, ...customList, ...propertyValues];
     return Array.from(new Set(combined.filter(v => typeof v === 'string' && v.trim() !== ''))).sort();
   }, [properties]);
 
-  const availableDistricts = useMemo(() => getUniqueOptions(INITIAL_DISTRICTS, 'district'), [getUniqueOptions]);
-  const availableHousingClasses = useMemo(() => getUniqueOptions(HOUSING_CLASSES, 'housingClass'), [getUniqueOptions]);
-  const availableRepairTypes = useMemo(() => getUniqueOptions(REPAIR_TYPES, 'repairType'), [getUniqueOptions]);
-  const availableHeatingOptions = useMemo(() => getUniqueOptions(HEATING_OPTIONS, 'heating'), [getUniqueOptions]);
-  const availableYearBuiltOptions = useMemo(() => getUniqueOptions(YEAR_BUILT_OPTIONS, 'yearBuilt'), [getUniqueOptions]);
-  const availableWallTypeOptions = useMemo(() => getUniqueOptions(WALL_TYPE_OPTIONS, 'wallType'), [getUniqueOptions]);
-  const availableBathroomOptions = useMemo(() => getUniqueOptions(BATHROOM_OPTIONS, 'bathroomType'), [getUniqueOptions]);
+  // Динамические списки опций для SingleSelectWithDelete
+  const availableDistricts = useMemo(() => getUniqueOptions(INITIAL_DISTRICTS, customOptions.districts, 'district'), [getUniqueOptions, customOptions.districts]);
+  const availableHousingClasses = useMemo(() => getUniqueOptions(HOUSING_CLASSES, customOptions.housingClasses, 'housingClass'), [getUniqueOptions, customOptions.housingClasses]);
+  const availableRepairTypes = useMemo(() => getUniqueOptions(REPAIR_TYPES, customOptions.repairTypes, 'repairType'), [getUniqueOptions, customOptions.repairTypes]);
+  const availableHeatingOptions = useMemo(() => getUniqueOptions(HEATING_OPTIONS, customOptions.heatingOptions, 'heating'), [getUniqueOptions, customOptions.heatingOptions]);
+  const availableYearBuiltOptions = useMemo(() => getUniqueOptions(YEAR_BUILT_OPTIONS, customOptions.yearBuiltOptions, 'yearBuilt'), [getUniqueOptions, customOptions.yearBuiltOptions]);
+  const availableWallTypeOptions = useMemo(() => getUniqueOptions(WALL_TYPE_OPTIONS, customOptions.wallTypeOptions, 'wallType'), [getUniqueOptions, customOptions.wallTypeOptions]);
+  const availableBathroomOptions = useMemo(() => getUniqueOptions(BATHROOM_OPTIONS, customOptions.bathroomOptions, 'bathroomType'), [getUniqueOptions, customOptions.bathroomOptions]);
+
+  // Динамические списки опций для EditableMultiSelect (для фильтров, не для формы)
+  const availableTechOptions = useMemo(() => getUniqueOptions(TECH_OPTIONS, customOptions.techOptions, 'tech'), [getUniqueOptions, customOptions.techOptions]);
+  const availableComfortOptions = useMemo(() => getUniqueOptions(COMFORT_OPTIONS, customOptions.comfortOptions, 'comfort'), [getUniqueOptions, customOptions.comfortOptions]);
+  const availableCommOptions = useMemo(() => getUniqueOptions(COMM_OPTIONS, customOptions.commOptions, 'comm'), [getUniqueOptions, customOptions.commOptions]);
+  const availableInfraOptions = useMemo(() => getUniqueOptions(INFRA_OPTIONS, customOptions.infraOptions, 'infra'), [getUniqueOptions, customOptions.infraOptions]);
 
 
-  const handleRemoveCustomDistrict = async (districtToRemove: string) => {
+  // Функции для добавления пользовательских опций
+  const handleAddCustomOption = useCallback((category: keyof typeof customOptions, option: string) => {
+    setCustomOptions(prev => {
+      const updatedCategory = Array.from(new Set([...prev[category], option])).sort();
+      const updatedOptions = { ...prev, [category]: updatedCategory };
+      updateCustomOptionsOnServer(updatedOptions);
+      return updatedOptions;
+    });
+  }, [updateCustomOptionsOnServer]);
+
+  // Функции для удаления пользовательских опций
+  const handleRemoveCustomOption = useCallback((category: keyof typeof customOptions, optionToRemove: string, initialConstants: string[]) => {
+    if (initialConstants.includes(optionToRemove)) {
+      showError(`Нельзя удалить предопределенную опцию "${optionToRemove}".`);
+      return;
+    }
+    if (!window.confirm(`Вы уверены, что хотите удалить пользовательскую опцию "${optionToRemove}"?`)) {
+      return;
+    }
+
+    setCustomOptions(prev => {
+      const updatedCategory = prev[category].filter(opt => opt !== optionToRemove);
+      const updatedOptions = { ...prev, [category]: updatedCategory };
+      updateCustomOptionsOnServer(updatedOptions);
+      return updatedOptions;
+    });
+  }, [updateCustomOptionsOnServer]);
+
+
+  const handleRemoveCustomDistrict = useCallback(async (districtToRemove: string) => {
+    if (INITIAL_DISTRICTS.includes(districtToRemove)) {
+      showError(`Нельзя удалить предопределенный район "${districtToRemove}".`);
+      return;
+    }
     if (!window.confirm(`Вы уверены, что хотите удалить район "${districtToRemove}"? Все объекты, использующие его, будут обновлены.`)) {
       return;
     }
@@ -103,12 +204,23 @@ const App: React.FC = () => {
       });
   
       await Promise.all(updatePromises);
-      fetchProperties();
+      
+      // Remove from custom options
+      setCustomOptions(prev => {
+        const updatedDistricts = prev.districts.filter(d => d !== districtToRemove);
+        const updatedOptions = { ...prev, districts: updatedDistricts };
+        updateCustomOptionsOnServer(updatedOptions);
+        return updatedOptions;
+      });
+
+      fetchProperties(); // Re-fetch properties to reflect changes
+      showSuccess(`Район "${districtToRemove}" успешно удален и объекты обновлены.`);
     } catch (error) {
       console.error("Error removing custom district:", error);
-      alert("Ошибка при удалении района. Пожалуйста, проверьте консоль.");
+      showError("Ошибка при удалении района. Пожалуйста, проверьте консоль.");
     }
-  };
+  }, [properties, fetchProperties, updateCustomOptionsOnServer]);
+
 
   const [filters, setFilters] = useState<FilterState>({
     category: 'apartments',
@@ -139,7 +251,7 @@ const App: React.FC = () => {
     distanceFromCityKm: '',
     yearBuilt: 'Любой',
     wallType: 'Любой',
-    bathroomType: 'Любой', // Инициализация нового поля фильтра
+    bathroomType: 'Любой',
     tech: [],
     comfort: [],
     comm: [],
@@ -187,12 +299,10 @@ const App: React.FC = () => {
         if (filters.isEOselya !== null && p.isEOselya !== filters.isEOselya) return false;
         if (filters.yearBuilt !== 'Любой' && p.yearBuilt !== filters.yearBuilt) return false;
         if (filters.wallType !== 'Любой' && p.wallType !== filters.wallType) return false;
-        if (filters.bathroomType !== 'Любой' && p.bathroomType !== filters.bathroomType) return false; // Новый фильтр
+        if (filters.bathroomType !== 'Любой' && p.bathroomType !== filters.bathroomType) return false;
 
-        // New filter for houseSubtype (now "Тип дома")
         if (filters.category === 'houses' && filters.houseSubtype !== 'Любой' && p.houseSubtype !== filters.houseSubtype) return false;
         
-        // New filters for locationType and distanceFromCityKm
         if (filters.category === 'houses') {
           if (filters.locationType !== 'Любой') {
             if (filters.locationType === 'В городе' && p.locationType !== 'inCity') return false;
@@ -222,6 +332,7 @@ const App: React.FC = () => {
           body: JSON.stringify(property),
         });
         if (!response.ok) throw new Error('Failed to update property');
+        showSuccess('Объект успешно обновлен!');
       } else {
         const response = await fetch(API_URL, {
           method: 'POST',
@@ -229,13 +340,14 @@ const App: React.FC = () => {
           body: JSON.stringify(property),
         });
         if (!response.ok) throw new Error('Failed to add property');
+        showSuccess('Объект успешно добавлен!');
       }
       fetchProperties();
       setIsModalOpen(false);
       setEditingProperty(null);
     } catch (error) {
       console.error("Error saving property:", error);
-      alert("Ошибка при сохранении объекта. Пожалуйста, проверьте консоль.");
+      showError("Ошибка при сохранении объекта. Пожалуйста, проверьте консоль.");
     }
   };
 
@@ -247,9 +359,10 @@ const App: React.FC = () => {
       });
       if (!response.ok) throw new Error('Failed to delete property');
       fetchProperties();
+      showSuccess('Объект успешно удален!');
     } catch (error) {
       console.error("Error deleting property:", error);
-      alert("Ошибка при удалении объекта. Пожалуйста, проверьте консоль.");
+      showError("Ошибка при удалении объекта. Пожалуйста, проверьте консоль.");
     }
   };
 
@@ -268,7 +381,7 @@ const App: React.FC = () => {
       distanceFromCityKm: '',
       yearBuilt: 'Любой',
       wallType: 'Любой',
-      bathroomType: 'Любой', // Сброс нового поля
+      bathroomType: 'Любой',
       tech: [], comfort: [], comm: [], infra: [],
       keywords: '',
     });
@@ -407,7 +520,7 @@ const App: React.FC = () => {
                             placeholder="До" 
                             value={filters.distanceFromCityKm} 
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters({...filters, distanceFromCityKm: e.target.value})} 
-                            className="w-full bg-slate-50 rounded-2xl p-4 text-sm font-bold outline-none" 
+                            className="w-1/2 bg-slate-50 rounded-2xl p-4 text-sm font-bold outline-none" 
                           />
                         </div>
                       )}
@@ -576,10 +689,10 @@ const App: React.FC = () => {
 
                         {!isLand && (
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 py-8 border-y border-slate-50">
-                            <MultiSelect label="Техника" prefix="Т" options={TECH_OPTIONS} selected={filters.tech} onChange={(s: string[]) => setFilters({...filters, tech: s})} />
-                            <MultiSelect label="Комфорт" prefix="К" options={COMFORT_OPTIONS} selected={filters.comfort} onChange={(s: string[]) => setFilters(p => ({...p, comfort: s}))} />
-                            <MultiSelect label="Коммуникации" prefix="К" options={COMM_OPTIONS} selected={filters.comm} onChange={(s: string[]) => setFilters(p => ({...p, comm: s}))} />
-                            <MultiSelect label="Инфраструктура" prefix="И" options={INFRA_OPTIONS} selected={filters.infra} onChange={(s: string[]) => setFilters(p => ({...p, infra: s}))} />
+                            <MultiSelect label="Техника" prefix="Т" options={availableTechOptions} selected={filters.tech} onChange={(s: string[]) => setFilters({...filters, tech: s})} />
+                            <MultiSelect label="Комфорт" prefix="К" options={availableComfortOptions} selected={filters.comfort} onChange={(s: string[]) => setFilters(p => ({...p, comfort: s}))} />
+                            <MultiSelect label="Коммуникации" prefix="К" options={availableCommOptions} selected={filters.comm} onChange={(s: string[]) => setFilters(p => ({...p, comm: s}))} />
+                            <MultiSelect label="Инфраструктура" prefix="И" options={availableInfraOptions} selected={filters.infra} onChange={(s: string[]) => setFilters(p => ({...p, infra: s}))} />
                           </div>
                         )}
 
@@ -597,7 +710,7 @@ const App: React.FC = () => {
                               </label>
                               <label className="flex items-center gap-3 cursor-pointer group">
                                 <div 
-                                  className={`w-12 h-6 rounded-full relative transition-all ${filters.hasRepair === true ? 'bg-indigo-600' : 'bg-slate-200'}`}
+                                  classNameclassName={`w-12 h-6 rounded-full relative transition-all ${filters.hasRepair === true ? 'bg-indigo-600' : 'bg-slate-200'}`}
                                   onClick={() => setFilters({...filters, hasRepair: filters.hasRepair === true ? null : true})}
                                 >
                                   <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${filters.hasRepair === true ? 'left-7' : 'left-1'}`}></div>
@@ -672,14 +785,39 @@ const App: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveProperty}
         editingProperty={editingProperty}
+        
         availableDistricts={availableDistricts}
+        onAddCustomDistrict={(option) => handleAddCustomOption('districts', option)}
         onRemoveCustomDistrict={handleRemoveCustomDistrict}
+
         availableHousingClasses={availableHousingClasses}
+        onAddCustomHousingClass={(option) => handleAddCustomOption('housingClasses', option)}
+        onRemoveCustomHousingClass={(option) => handleRemoveCustomOption('housingClasses', option, HOUSING_CLASSES)}
+
         availableRepairTypes={availableRepairTypes}
+        onAddCustomRepairType={(option) => handleAddCustomOption('repairTypes', option)}
+        onRemoveCustomRepairType={(option) => handleRemoveCustomOption('repairTypes', option, REPAIR_TYPES)}
+
         availableHeatingOptions={availableHeatingOptions}
+        onAddCustomHeatingOption={(option) => handleAddCustomOption('heatingOptions', option)}
+        onRemoveCustomHeatingOption={(option) => handleRemoveCustomOption('heatingOptions', option, HEATING_OPTIONS)}
+
         availableYearBuiltOptions={availableYearBuiltOptions}
+        onAddCustomYearBuiltOption={(option) => handleAddCustomOption('yearBuiltOptions', option)}
+        onRemoveCustomYearBuiltOption={(option) => handleRemoveCustomOption('yearBuiltOptions', option, YEAR_BUILT_OPTIONS)}
+
         availableWallTypeOptions={availableWallTypeOptions}
+        onAddCustomWallTypeOption={(option) => handleAddCustomOption('wallTypeOptions', option)}
+        onRemoveCustomWallTypeOption={(option) => handleRemoveCustomOption('wallTypeOptions', option, WALL_TYPE_OPTIONS)}
+
         availableBathroomOptions={availableBathroomOptions}
+        onAddCustomBathroomOption={(option) => handleAddCustomOption('bathroomOptions', option)}
+        onRemoveCustomBathroomOption={(option) => handleRemoveCustomOption('bathroomOptions', option, BATHROOM_OPTIONS)}
+
+        onAddCustomTechOption={(option) => handleAddCustomOption('techOptions', option)}
+        onAddCustomComfortOption={(option) => handleAddCustomOption('comfortOptions', option)}
+        onAddCustomCommOption={(option) => handleAddCustomOption('commOptions', option)}
+        onAddCustomInfraOption={(option) => handleAddCustomOption('infraOptions', option)}
       />
     </div>
   );

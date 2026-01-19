@@ -7,6 +7,7 @@ interface EditableMultiSelectProps {
   initialOptions: string[]; // Предопределенные опции
   selected: string[];
   onChange: (selected: string[]) => void;
+  onAddCustomOption: (option: string) => void; // Callback для добавления пользовательской опции
   accentColor?: string;
 }
 
@@ -16,6 +17,7 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
   initialOptions,
   selected, 
   onChange,
+  onAddCustomOption, // Принимаем callback
   accentColor = 'blue'
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -55,7 +57,8 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
   const handleAddCustomOption = () => {
     const trimmedValue = inputValue.trim();
     if (trimmedValue && !selected.includes(trimmedValue)) {
-      onChange([...selected, trimmedValue]);
+      onChange([...selected, trimmedValue]); // Добавляем в выбранные
+      onAddCustomOption(trimmedValue); // Сохраняем в постоянное хранилище
       setInputValue(''); // Очищаем поле ввода после добавления
       inputRef.current?.focus(); // Возвращаем фокус на поле ввода
     }
@@ -129,16 +132,14 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
                     />
                     <span className="group-hover:text-blue-600 transition-colors">{option}</span>
                   </div>
-                  {/* Возможность удаления для всех опций, если они не являются частью initialOptions, или для всех выбранных */}
-                  {/* Для простоты, позволим удалять все, что выбрано, если это не базовый набор, но для MultiSelect это обычно не нужно */}
-                  {/* Если нужно удалять только пользовательские, то логика будет сложнее */}
-                  {/* Здесь просто показываем, что можно удалить выбранный элемент */}
                   {selected.includes(option) && (
                     <button
                       type="button"
                       onClick={(e: React.MouseEvent) => {
                         e.stopPropagation();
                         onChange(selected.filter(item => item !== option));
+                        // Здесь также нужно вызвать onRemoveCustomOption, если это пользовательская опция
+                        // Но для MultiSelect это обычно не требуется, так как удаление из выбранных не означает удаление из 'initialOptions'
                       }}
                       className="p-1 bg-slate-50 rounded-full hover:bg-red-100 text-slate-400 hover:text-red-600 transition"
                       title="Удалить"
