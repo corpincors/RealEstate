@@ -47,11 +47,7 @@
     "districts": [],
     "housingClasses": [],
     "repairTypes": [],
-    "heatingOptions": [
-      "2",
-      "3",
-      "й"
-    ],
+    "heatingOptions": [],
     "yearBuiltOptions": [],
     "wallTypeOptions": [],
     "bathroomOptions": [],
