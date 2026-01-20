@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 
 const server = jsonServer.create();
 const router = jsonServer.router('db.json');
-const middlewares = jsonServer.defaults();
+const middlewares = jsonServer.defaults({ static: path.join(__dirname, 'dist') });
 
 // Убедимся, что папка uploads существует
 const uploadDir = path.join(__dirname, 'uploads');
