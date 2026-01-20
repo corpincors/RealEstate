@@ -12,6 +12,7 @@ import {
 } from '../constants.tsx';
 import { API_BASE_URL } from '../src/config';
 import { getImageUrl } from '../src/utils/image';
+import { compressImage } from '../src/utils/imageCompression';
 
 interface PropertyFormModalProps {
   isOpen: boolean;
@@ -321,10 +322,11 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     if (!files) return;
 
     const uploadPromises = Array.from(files).map(async (file: File) => {
-      const formData = new FormData();
-      formData.append('image', file);
-      
       try {
+        const compressedFile = await compressImage(file);
+        const formData = new FormData();
+        formData.append('image', compressedFile);
+        
         const response = await fetch(`${API_BASE_URL}/upload`, {
            method: 'POST',
            body: formData
