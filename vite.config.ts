@@ -14,6 +14,10 @@ export default defineConfig(({ mode }) => {
             changeOrigin: true,
             rewrite: (path) => path.replace(/^\/api/, ''), // Удаляем префикс /api
           },
+          '/uploads': {
+            target: 'http://localhost:3001',
+            changeOrigin: true,
+          },
         },
       },
       plugins: [react()],

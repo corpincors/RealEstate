@@ -10,6 +10,7 @@ import {
   // Новые константы для земельных участков
   LAND_COMMUNICATIONS_OPTIONS, LAND_STRUCTURES_OPTIONS, LAND_INFRASTRUCTURE_OPTIONS, LAND_LANDSCAPE_OPTIONS
 } from '../constants.tsx';
+import { API_BASE_URL } from '../src/config';
 
 interface PropertyFormModalProps {
   isOpen: boolean;
@@ -318,24 +319,38 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     const files = e.target.files;
     if (!files) return;
 
-    const readers = Array.from(files).map((file: File) => {
-      return new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          resolve(event.target?.result as string);
-        };
-        reader.readAsDataURL(file);
-      });
+    const uploadPromises = Array.from(files).map(async (file: File) => {
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/upload`, {
+           method: 'POST',
+           body: formData
+        });
+        
+        if (!response.ok) {
+          console.error(`Upload failed for file ${file.name}`);
+          return null;
+        }
+        
+        const data = await response.json();
+        return data.url; 
+      } catch (err) {
+        console.error("Error uploading file:", err);
+        return null;
+      }
     });
 
-    const results = await Promise.all(readers);
+    const results = (await Promise.all(uploadPromises)).filter((url): url is string => url !== null);
+    
     setFormData(prev => ({ 
       ...prev, 
       imageUrls: [...(prev.imageUrls || []), ...results] 
     }));
     
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = ''; 
     }
   };
 
