@@ -34,36 +34,60 @@ const upload = multer({ storage: storage });
 server.use(middlewares);
 server.use(jsonServer.bodyParser);
 
-// Middleware для добавления задержки (опционально, если нужно эмулировать сеть, но мы наоборот хотим быстрее)
+// Middleware для добавления задержки (опционально)
 // server.use((req, res, next) => {
 //   setTimeout(next, 0);
 // });
 
-// Кастомный маршрут для загрузки файлов
-server.post('/upload', upload.single('image'), (req, res) => {
+// Кастомный маршрут для загрузки файлов (API)
+// Handle both /api/upload and /upload for compatibility
+const handleUpload = (req, res) => {
   if (req.file) {
-    // Возвращаем URL загруженного файла
-    // Используем относительный путь или полный URL в зависимости от потребностей
-    // В данном случае, так как фронтенд и бэкенд могут быть на разных портах, лучше возвращать полный URL,
-    // но если мы проксируем, то можно и относительный.
-    // Для простоты вернем полный URL, предполагая, что клиент обращается к этому же хосту/порту.
-    
-    // Важно: req.protocol может врать за прокси (ngrok/serveo), поэтому лучше использовать относительный путь
-    // или настроить trust proxy.
-    // Но так как картинки сохраняются как строки в БД, лучше сохранять путь вида '/uploads/filename.jpg'
-    // и на клиенте подставлять API_BASE_URL.
-    
     const fileUrl = `/uploads/${req.file.filename}`;
     res.json({ url: fileUrl });
   } else {
     res.status(400).json({ error: 'No file uploaded' });
   }
-});
+};
+
+server.post('/api/upload', upload.single('image'), handleUpload);
+server.post('/upload', upload.single('image'), handleUpload);
 
 // Раздача статики (загруженных картинок)
+// Serve uploads at /api/uploads and /uploads
 server.use('/uploads', express.static(uploadDir));
+server.use('/api/uploads', express.static(uploadDir));
 
-server.use(router);
+// Mount JSON Server router at /api and root (for backward compatibility if needed, but better to enforce /api)
+// We mount at /api so built frontend works (requests /api/properties)
+server.use('/api', router);
+// Also mount at root IF request is not for static files? 
+// But we want to serve frontend at root.
+// If we mount router at root, it might conflict with frontend routes if they share names (e.g. /clients vs /clients in DB).
+// DB has 'properties', 'clients', 'customOptions'.
+// Frontend has '/', '/clients', '/login', '/property/:id'.
+// '/clients' collides!
+// So we CANNOT mount router at root if we want to serve frontend.
+// The frontend MUST use /api prefix.
+// Luckily, we configured API_BASE_URL to /api.
+
+// Serve Static Frontend (Dist)
+const distDir = path.join(__dirname, 'dist');
+if (fs.existsSync(distDir)) {
+  server.use(express.static(distDir));
+  
+  // SPA Fallback
+  server.get('*', (req, res, next) => {
+    // If request is for API (starting with /api) and not handled, return 404
+    if (req.path.startsWith('/api')) {
+      return next(); // Let default json-server 404 handler handle it (or just return 404)
+    }
+    // Otherwise serve index.html
+    res.sendFile(path.join(distDir, 'index.html'));
+  });
+} else {
+  console.warn('Dist folder not found. Frontend will not be served.');
+}
 
 const PORT = 3001;
 server.listen(PORT, '0.0.0.0', () => {

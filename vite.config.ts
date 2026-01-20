@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
           '/api': {
             target: 'http://localhost:3001', // json-server будет работать на порту 3001
             changeOrigin: true,
-            rewrite: (path) => path.replace(/^\/api/, ''), // Удаляем префикс /api
+            // rewrite: (path) => path.replace(/^\/api/, ''), // Removed rewrite
           },
           '/uploads': {
             target: 'http://localhost:3001',

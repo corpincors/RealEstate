@@ -108,7 +108,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onEdit, onDelete,
     <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 group border border-slate-100 flex flex-col h-full">
       <div className="h-72 relative overflow-hidden shrink-0">
         <img 
-          src={property.imageUrls[currentImg] || 'https://via.placeholder.com/800x600?text=No+Image'} 
+          src={getImageUrl(property.imageUrls[currentImg]) || 'https://via.placeholder.com/800x600?text=No+Image'} 
           alt={property.address}
           className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ${
             property.status === 'sold' || property.status === 'advance' ? 'blur-sm' : ''

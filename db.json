@@ -1,5 +1,102 @@
 {
-  "properties": [],
+  "properties": [
+    {
+      "category": "apartments",
+      "type": "Secondary",
+      "status": "available",
+      "price": 32130,
+      "district": "Киевский",
+      "address": "3213213",
+      "ownerPhone": "2332",
+      "totalArea": 32,
+      "rooms": "1",
+      "hasFurniture": false,
+      "hasRepair": false,
+      "tech": [],
+      "comfort": [],
+      "comm": [],
+      "infra": [],
+      "isEOselya": false,
+      "description": "ува",
+      "imageUrls": [
+        "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%22%20height%3D%2275%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23cbd5e1%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%209l9-7%209%207v11a2%202%200%200%201-2%202H5a2%202%200%200%201-2-2z%22%3E%3C%2Fpath%3E%3Cpolyline%20points%3D%229%2022%209%2012%2015%2012%2015%2022%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E"
+      ],
+      "houseSubtype": "Клубный дом",
+      "locationType": "inCity",
+      "cadastralNumber": "",
+      "landCommunications": [],
+      "landStructures": [],
+      "landInfrastructure": [],
+      "landLandscape": [],
+      "kitchenArea": 29,
+      "id": "xnuf2mt96"
+    },
+    {
+      "category": "apartments",
+      "type": "Secondary",
+      "status": "available",
+      "price": 2323,
+      "district": "Киевский",
+      "address": "3232",
+      "ownerPhone": "323",
+      "totalArea": 23,
+      "rooms": "1",
+      "hasFurniture": false,
+      "hasRepair": false,
+      "tech": [],
+      "comfort": [],
+      "comm": [],
+      "infra": [],
+      "isEOselya": false,
+      "description": "",
+      "imageUrls": [
+        "/uploads/1768910037517-395834814.png",
+        "/uploads/1768910046494-833538009.png"
+      ],
+      "houseSubtype": "Клубный дом",
+      "locationType": "inCity",
+      "cadastralNumber": "",
+      "landCommunications": [],
+      "landStructures": [],
+      "landInfrastructure": [],
+      "landLandscape": [],
+      "floor": 32,
+      "totalFloors": 32,
+      "kitchenArea": 29,
+      "id": "s4349ko46"
+    },
+    {
+      "category": "apartments",
+      "type": "Secondary",
+      "status": "available",
+      "price": 213,
+      "district": "Киевский",
+      "address": "3213213",
+      "ownerPhone": "3213213",
+      "totalArea": 3123,
+      "rooms": "1",
+      "hasFurniture": false,
+      "hasRepair": false,
+      "tech": [],
+      "comfort": [],
+      "comm": [],
+      "infra": [],
+      "isEOselya": false,
+      "description": "321",
+      "imageUrls": [
+        "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%22%20height%3D%2275%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23cbd5e1%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%209l9-7%209%207v11a2%202%200%200%201-2%202H5a2%202%200%200%201-2-2z%22%3E%3C%2Fpath%3E%3Cpolyline%20points%3D%229%2022%209%2012%2015%2012%2015%2022%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E"
+      ],
+      "houseSubtype": "Клубный дом",
+      "locationType": "inCity",
+      "cadastralNumber": "",
+      "landCommunications": [],
+      "landStructures": [],
+      "landInfrastructure": [],
+      "landLandscape": [],
+      "kitchenArea": 3210,
+      "id": "wsmqw6cg4"
+    }
+  ],
   "clients": [
     {
       "clientName": "Ваоентин",
@@ -10,7 +107,9 @@
     }
   ],
   "customOptions": {
-    "districts": [],
+    "districts": [
+      "12"
+    ],
     "housingClasses": [],
     "repairTypes": [],
     "heatingOptions": [],
