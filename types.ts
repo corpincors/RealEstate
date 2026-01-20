@@ -4,6 +4,7 @@ export interface Property {
   id: string;
   category: PropertyCategory;
   type: 'Secondary' | 'New Build' | 'Construction';
+  status: 'available' | 'sold' | 'advance';
   price: number;
   district: string;
   address: string;
@@ -34,6 +35,13 @@ export interface Property {
   yearBuilt?: string; // Новое поле: Год постройки/сдачи
   wallType?: string; // Новое поле: Тип стен
   bathroomType?: string; // Новое поле: Тип санузла
+  dealType?: string; // Новое поле: Тип сделки
+  planningStatus?: string; // Новое поле: Статус планировки
+  // Новые поля для земельных участков
+  landCommunications?: string[]; // Коммуникации на участке
+  landStructures?: string[]; // Сооружения на участке
+  landInfrastructure?: string[]; // Инфраструктура до 500 метров
+  landLandscape?: string[]; // Ландшафт до 1 км
   description: string;
   imageUrls: string[];
   publicLink?: string; // Added field for the public client link
@@ -41,7 +49,8 @@ export interface Property {
 
 export interface FilterState {
   category: PropertyCategory;
-  district: string;
+  status: 'available' | 'sold' | 'advance' | 'all';
+  district: string[];
   minPrice: string;
   maxPrice: string;
   minArea: string;
@@ -55,25 +64,32 @@ export interface FilterState {
   rooms: string;
   type: string;
   // houseType: string; // Удалено поле Тип дома
-  housingClass: string;
+  housingClass: string[];
   hasFurniture: boolean | null;
   hasRepair: boolean | null;
-  repairType: string;
-  heating: string;
+  repairType: string[];
+  heating: string[];
   isEOselya: boolean | null;
-  landType: string;
+  landType: string[];
   minLandArea: string;
   maxLandArea: string;
-  houseSubtype: string; // Добавлено поле для фильтрации по типу дома
+  houseSubtype: string[]; // Добавлено поле для фильтрации по типу дома
   locationType: string; // Добавлено поле для фильтрации по типу местоположения
   distanceFromCityKm: string; // Изменено на одно поле для фильтрации по расстоянию от города
-  yearBuilt: string; // Добавлено поле для фильтрации по году постройки
-  wallType: string; // Добавлено поле для фильтрации по типу стен
-  bathroomType: string; // Новое поле: Тип санузла
+  yearBuilt: string[]; // Добавлено поле для фильтрации по году постройки
+  wallType: string[]; // Добавлено поле для фильтрации по типу стен
+  bathroomType: string[]; // Новое поле: Тип санузла
+  dealType: string[]; // Новое поле: Тип сделки
+  planningStatus: string[]; // Новое поле: Статус планировки
   tech: string[];
   comfort: string[];
   comm: string[];
   infra: string[];
+  // Новые поля для фильтрации земельных участков
+  landCommunications: string[]; // Коммуникации на участке
+  landStructures: string[]; // Сооружения на участке
+  landInfrastructure: string[]; // Инфраструктура до 500 метров
+  landLandscape: string[]; // Ландшафт до 1 км
   keywords: string; // Добавлено поле для поиска по ключевым словам
 }
 

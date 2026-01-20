@@ -80,8 +80,26 @@ const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({ properties }) =
           <img 
             src={property.imageUrls[currentImg] || 'https://via.placeholder.com/1200x800?text=No+Image'} 
             alt={property.address}
-            className="w-full h-full object-cover"
+            className={`w-full h-full object-cover ${
+              property.status === 'sold' || property.status === 'advance' ? 'blur-sm' : ''
+            }`}
           />
+          
+          {/* Оверлей для статусов */}
+          {(property.status === 'sold' || property.status === 'advance') && (
+            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+              <div className="text-center">
+                <div className={`text-5xl font-black mb-2 ${
+                  property.status === 'sold' ? 'text-red-500' : 'text-yellow-500'
+                }`}>
+                  {property.status === 'sold' ? 'ПРОДАНО' : 'АВАНС'}
+                </div>
+                <div className="text-white text-lg font-bold">
+                  {property.status === 'sold' ? 'Объект продан' : 'Объект под авансом'}
+                </div>
+              </div>
+            </div>
+          )}
           {property.imageUrls.length > 1 && (
             <>
               <button onClick={prevImg} className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/50 backdrop-blur-md p-3 rounded-full text-white transition">
@@ -135,41 +153,61 @@ const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({ properties }) =
           <div className="lg:col-span-1 bg-slate-50 rounded-3xl p-6 space-y-6">
             <h3 className="text-lg font-black text-slate-900 uppercase tracking-widest">Основные характеристики</h3>
             <ul className="space-y-3 text-sm font-medium text-slate-700">
-              <li className="flex justify-between"><span>Категория:</span> <span className="font-semibold">{categoryLabel}</span></li>
+              <li className="flex justify-between items-start gap-2">
+                <span className="text-slate-600 shrink-0">Категория:</span> 
+                <span className="font-semibold text-right break-words">{categoryLabel}</span>
+              </li>
               {property.category === 'houses' && (
                 <>
-                  <li className="flex justify-between"><span>Тип дома:</span> <span className="font-semibold">{property.houseSubtype || '—'}</span></li>
-                  <li className="flex justify-between">
-                    <span>Расположение:</span> 
-                    <span className="font-semibold">
+                  <li className="flex justify-between items-start gap-2">
+                    <span className="text-slate-600 shrink-0">Тип дома:</span> 
+                    <span className="font-semibold text-right break-words">{property.houseSubtype || '—'}</span>
+                  </li>
+                  <li className="flex justify-between items-start gap-2">
+                    <span className="text-slate-600 shrink-0">Расположение:</span> 
+                    <span className="font-semibold text-right break-words">
                       {property.locationType === 'inCity' ? 'В городе' : 
                        property.locationType === 'outsideCity' && property.distanceFromCityKm !== undefined ? `${property.distanceFromCityKm} км от города` : '—'}
                     </span>
                   </li>
-                  {property.plotArea !== undefined && <li className="flex justify-between"><span>Площадь участка:</span> <span className="font-semibold">{property.plotArea} сот.</span></li>}
-                  {property.cadastralNumber && <li className="flex justify-between"><span>Кадастровый номер:</span> <span className="font-semibold">{property.cadastralNumber}</span></li>}
-                </>
-              )}
-              {property.category !== 'land' && (
-                <>
-                  <li className="flex justify-between"><span>Тип:</span> <span className="font-semibold">{property.type}</span></li>
-                  <li className="flex justify-between"><span>Комнат:</span> <span className="font-semibold">{property.rooms}</span></li>
-                  <li className="flex justify-between"><span>Этаж:</span> <span className="font-semibold">{property.floor || '—'} / {property.totalFloors || '—'}</span></li>
-                  <li className="flex justify-between"><span>Общая площадь:</span> <span className="font-semibold">{property.totalArea} м²</span></li>
-                  <li className="flex justify-between"><span>Площадь кухни:</span> <span className="font-semibold">{property.kitchenArea || '—'} м²</span></li>
-                  <li className="flex justify-between"><span>Класс жилья:</span> <span className="font-semibold">{property.housingClass}</span></li>
-                  <li className="flex justify-between"><span>Ремонт:</span> <span className="font-semibold">{property.hasRepair ? property.repairType : 'Без ремонта'}</span></li>
-                  <li className="flex justify-between"><span>Отопление:</span> <span className="font-semibold">{property.heating}</span></li>
-                  <li className="flex justify-between"><span>Меблировка:</span> <span className="font-semibold">{property.hasFurniture ? 'Да' : 'Нет'}</span></li>
-                  {property.yearBuilt && <li className="flex justify-between"><span>Год постройки/сдачи:</span> <span className="font-semibold">{property.yearBuilt}</span></li>}
-                  {property.wallType && <li className="flex justify-between"><span>Тип стен:</span> <span className="font-semibold">{property.wallType}</span></li>}
-                  {property.bathroomType && <li className="flex justify-between"><span>Санузел:</span> <span className="font-semibold">{property.bathroomType}</span></li>} {/* Новое поле */}
+                  {property.plotArea !== undefined && <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Площадь участка:</span> <span className="font-semibold text-right break-words">{property.plotArea} сот.</span></li>}
+                  {property.cadastralNumber && <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Кадастровый номер:</span> <span className="font-semibold text-right break-words font-mono text-xs">{property.cadastralNumber}</span></li>}
                 </>
               )}
               {property.category === 'land' && (
                 <>
-                  <li className="flex justify-between"><span>Площадь земли:</span> <span className="font-semibold">{property.landArea} сот.</span></li>
-                  <li className="flex justify-between"><span>Тип земли:</span> <span className="font-semibold">{property.landType}</span></li>
+                  <li className="flex justify-between items-start gap-2">
+                    <span className="text-slate-600 shrink-0">Расположение:</span> 
+                    <span className="font-semibold text-right break-words">
+                      {property.locationType === 'inCity' ? 'В городе' : 
+                       property.locationType === 'outsideCity' && property.distanceFromCityKm !== undefined ? `${property.distanceFromCityKm} км от города` : '—'}
+                    </span>
+                  </li>
+                  {property.plotArea !== undefined && <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Площадь участка:</span> <span className="font-semibold text-right break-words">{property.plotArea} сот.</span></li>}
+                  {property.cadastralNumber && <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Кадастровый номер:</span> <span className="font-semibold text-right break-words font-mono text-xs">{property.cadastralNumber}</span></li>}
+                </>
+              )}
+              {property.category !== 'land' && (
+                <>
+                  <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Тип:</span> <span className="font-semibold text-right break-words">{property.type}</span></li>
+                  <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Комнат:</span> <span className="font-semibold text-right break-words">{property.rooms}</span></li>
+                  <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Этаж:</span> <span className="font-semibold text-right break-words">{property.floor || '—'} / {property.totalFloors || '—'}</span></li>
+                  <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Общая площадь:</span> <span className="font-semibold text-right break-words">{property.totalArea} м²</span></li>
+                  <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Площадь кухни:</span> <span className="font-semibold text-right break-words">{property.kitchenArea || '—'} м²</span></li>
+                  <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Класс жилья:</span> <span className="font-semibold text-right break-words">{property.housingClass}</span></li>
+                  <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Ремонт:</span> <span className="font-semibold text-right break-words">{property.hasRepair ? property.repairType : 'Без ремонта'}</span></li>
+                  <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Отопление:</span> <span className="font-semibold text-right break-words">{property.heating}</span></li>
+                  <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Меблировка:</span> <span className="font-semibold text-right break-words">{property.hasFurniture ? 'Да' : 'Нет'}</span></li>
+                  {property.yearBuilt && <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Год постройки/сдачи:</span> <span className="font-semibold text-right break-words">{property.yearBuilt}</span></li>}
+                  {property.wallType && <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Тип стен:</span> <span className="font-semibold text-right break-words">{property.wallType}</span></li>}
+                  {property.bathroomType && <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Санузел:</span> <span className="font-semibold text-right break-words">{property.bathroomType}</span></li>} {/* Новое поле */}
+                </>
+              )}
+              {property.category === 'land' && (
+                <>
+                  <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Площадь земли:</span> <span className="font-semibold text-right break-words">{property.landArea} сот.</span></li>
+                  <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Тип недвижимости:</span> <span className="font-semibold text-right break-words">{property.landType}</span></li>
+                  {property.cadastralNumber && <li className="flex justify-between items-start gap-2"><span className="text-slate-600 shrink-0">Кадастровый номер:</span> <span className="font-semibold text-right break-words font-mono text-xs">{property.cadastralNumber}</span></li>}
                 </>
               )}
             </ul>
@@ -214,6 +252,43 @@ const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({ properties }) =
                   {property.infra.map((item: string) => <li key={item}>• {item}</li>)}
                 </ul>
               </div>
+            )}
+            {/* Поля для земельных участков */}
+            {property.category === 'land' && (
+              <>
+                {property.landCommunications && property.landCommunications.length > 0 && (
+                  <div>
+                    <h4 className="font-bold text-slate-800 mb-3">Коммуникации:</h4>
+                    <ul className="space-y-1 text-sm text-slate-600">
+                      {property.landCommunications.map((item: string) => <li key={item}>• {item}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {property.landStructures && property.landStructures.length > 0 && (
+                  <div>
+                    <h4 className="font-bold text-slate-800 mb-3">Сооружения:</h4>
+                    <ul className="space-y-1 text-sm text-slate-600">
+                      {property.landStructures.map((item: string) => <li key={item}>• {item}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {property.landInfrastructure && property.landInfrastructure.length > 0 && (
+                  <div>
+                    <h4 className="font-bold text-slate-800 mb-3">Инфраструктура до 500м:</h4>
+                    <ul className="space-y-1 text-sm text-slate-600">
+                      {property.landInfrastructure.map((item: string) => <li key={item}>• {item}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {property.landLandscape && property.landLandscape.length > 0 && (
+                  <div>
+                    <h4 className="font-bold text-slate-800 mb-3">Ландшафт до 1 км:</h4>
+                    <ul className="space-y-1 text-sm text-slate-600">
+                      {property.landLandscape.map((item: string) => <li key={item}>• {item}</li>)}
+                    </ul>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

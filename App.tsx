@@ -5,20 +5,25 @@ import {
   ROOMS_OPTIONS, LAND_TYPES, 
   REPAIR_TYPES, HOUSING_CLASSES, HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, 
   COMM_OPTIONS, INFRA_OPTIONS, CATEGORIES, INITIAL_DISTRICTS, HOUSE_TYPES_EXTENDED, LOCATION_TYPES,
-  YEAR_BUILT_OPTIONS, WALL_TYPE_OPTIONS, BATHROOM_OPTIONS
+  YEAR_BUILT_OPTIONS, WALL_TYPE_OPTIONS, BATHROOM_OPTIONS, DEAL_TYPE_OPTIONS, PLANNING_STATUS_OPTIONS,
+  // Новые константы для земельных участков
+  LAND_COMMUNICATIONS_OPTIONS, LAND_STRUCTURES_OPTIONS, LAND_INFRASTRUCTURE_OPTIONS, LAND_LANDSCAPE_OPTIONS
 } from './constants.tsx';
 import { PlusCircle, Search, Plus, Home, LogOut, ChevronDown, Users } from './components/Icons';
 import PropertyCard from './components/PropertyCard';
 import PropertyFormModal from './components/PropertyFormModal';
 import MultiSelect from './components/MultiSelect';
+import EditableMultiSelect from './components/EditableMultiSelect';
 import PropertyDetailPage from './src/pages/PropertyDetailPage';
 import LoginPage from '@/src/pages/LoginPage';
 import ClientsPage from '@/src/pages/ClientsPage';
 import { useAuth } from '@/src/context/AuthContext';
 import { showSuccess, showError } from './src/utils/toast';
 
-const API_URL = '/api/properties';
-const CUSTOM_OPTIONS_API_URL = '/api/customOptions';
+import { API_BASE_URL } from './src/config';
+
+const API_URL = `${API_BASE_URL}/properties`;
+const CUSTOM_OPTIONS_API_URL = `${API_BASE_URL}/customOptions`;
 const ADDITIONAL_FILTERS_STORAGE_KEY = 'realty_crm_additional_filters_open';
 
 const App: React.FC = () => {
@@ -37,10 +42,19 @@ const App: React.FC = () => {
     yearBuiltOptions: string[];
     wallTypeOptions: string[];
     bathroomOptions: string[];
+    dealTypeOptions: string[];
+    planningStatusOptions: string[];
+    landTypes: string[];
+    houseTypes: string[];
     techOptions: string[];
     comfortOptions: string[];
     commOptions: string[];
     infraOptions: string[];
+    // Новые поля для земельных участков
+    landCommunicationsOptions: string[];
+    landStructuresOptions: string[];
+    landInfrastructureOptions: string[];
+    landLandscapeOptions: string[];
   }>({
     districts: [],
     housingClasses: [],
@@ -49,10 +63,19 @@ const App: React.FC = () => {
     yearBuiltOptions: [],
     wallTypeOptions: [],
     bathroomOptions: [],
+    dealTypeOptions: [],
+    planningStatusOptions: [],
+    landTypes: [],
+    houseTypes: [],
     techOptions: [],
     comfortOptions: [],
     commOptions: [],
-    infraOptions: []
+    infraOptions: [],
+    // Новые поля для земельных участков
+    landCommunicationsOptions: [],
+    landStructuresOptions: [],
+    landInfrastructureOptions: [],
+    landLandscapeOptions: []
   });
 
   const [showAdditionalFilters, setShowAdditionalFilters] = useState<boolean>(() => {
@@ -76,7 +99,31 @@ const App: React.FC = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data: Property[] = await response.json();
-      setProperties(data);
+      
+      // Миграция: добавляем поле status если его нет
+      const migratedData = data.map(property => ({
+        ...property,
+        status: property.status || 'available'
+      }));
+      
+      // Обновляем объекты на сервере если нужно
+      for (const property of migratedData) {
+        if (!property.status) {
+          try {
+            await fetch(`${API_URL}/${property.id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ ...property, status: 'available' }),
+            });
+          } catch (error) {
+            console.error("Error migrating property:", error);
+          }
+        }
+      }
+      
+      setProperties(migratedData);
     } catch (error) {
       console.error("Failed to fetch properties:", error);
       showError("Не удалось загрузить список объектов.");
@@ -92,8 +139,21 @@ const App: React.FC = () => {
       const data = await response.json();
       setCustomOptions(data);
     } catch (error) {
-      console.error("Failed to fetch custom options:", error);
-      showError("Не удалось загрузить пользовательские опции.");
+      console.error("Failed to fetch custom options from API, trying fallback:", error);
+      // Fallback: load from db.json directly
+      try {
+        const dbResponse = await fetch('/db.json');
+        if (dbResponse.ok) {
+          const dbData = await dbResponse.json();
+          if (dbData.customOptions) {
+            setCustomOptions(dbData.customOptions);
+            console.log("Loaded customOptions from db.json fallback:", dbData.customOptions);
+          }
+        }
+      } catch (fallbackError) {
+        console.error("Failed to load fallback data:", fallbackError);
+        showError("Не удалось загрузить пользовательские опции.");
+      }
     }
   }, []);
 
@@ -130,33 +190,37 @@ const App: React.FC = () => {
     }
   }, []);
 
-  const getUniqueOptions = useCallback((initialConstants: string[], customList: string[], propertyField: keyof Property | 'tech' | 'comfort' | 'comm' | 'infra') => {
-    const propertyValues = properties.map((p: Property) => {
-      const value = p[propertyField as keyof Property];
-      if (Array.isArray(value)) {
-        return value;
-      }
-      return value;
-    }).flat().filter(Boolean) as string[];
-    
-    const combined = [...initialConstants, ...customList, ...propertyValues];
+  const getUniqueOptions = useCallback((initialConstants: string[], customList: string[] | undefined, propertyKey: string) => {
+    const propertyValues = properties.map(p => p[propertyKey as keyof Property]).filter(v => typeof v === 'string' && v.trim() !== '');
+    const customValues = Array.isArray(customList) ? customList : [];
+    const combined = [...initialConstants, ...customValues, ...propertyValues];
     return Array.from(new Set(combined.filter(v => typeof v === 'string' && v.trim() !== ''))).sort();
   }, [properties]);
 
   // Dynamic option lists for SingleSelectWithDelete
-  const availableDistricts = useMemo(() => getUniqueOptions(INITIAL_DISTRICTS, customOptions.districts, 'district'), [getUniqueOptions, customOptions.districts]);
-  const availableHousingClasses = useMemo(() => getUniqueOptions(HOUSING_CLASSES, customOptions.housingClasses, 'housingClass'), [getUniqueOptions, customOptions.housingClasses]);
-  const availableRepairTypes = useMemo(() => getUniqueOptions(REPAIR_TYPES, customOptions.repairTypes, 'repairType'), [getUniqueOptions, customOptions.repairTypes]);
-  const availableHeatingOptions = useMemo(() => getUniqueOptions(HEATING_OPTIONS, customOptions.heatingOptions, 'heating'), [getUniqueOptions, customOptions.heatingOptions]);
-  const availableYearBuiltOptions = useMemo(() => getUniqueOptions(YEAR_BUILT_OPTIONS, customOptions.yearBuiltOptions, 'yearBuilt'), [getUniqueOptions, customOptions.yearBuiltOptions]);
-  const availableWallTypeOptions = useMemo(() => getUniqueOptions(WALL_TYPE_OPTIONS, customOptions.wallTypeOptions, 'wallType'), [getUniqueOptions, customOptions.wallTypeOptions]);
-  const availableBathroomOptions = useMemo(() => getUniqueOptions(BATHROOM_OPTIONS, customOptions.bathroomOptions, 'bathroomType'), [getUniqueOptions, customOptions.bathroomOptions]);
+  const availableDistricts = useMemo(() => getUniqueOptions(INITIAL_DISTRICTS, customOptions.districts || [], 'district'), [getUniqueOptions, customOptions.districts]);
+  const availableHousingClasses = useMemo(() => getUniqueOptions(HOUSING_CLASSES, customOptions.housingClasses || [], 'housingClass'), [getUniqueOptions, customOptions.housingClasses]);
+  const availableRepairTypes = useMemo(() => getUniqueOptions(REPAIR_TYPES, customOptions.repairTypes || [], 'repairType'), [getUniqueOptions, customOptions.repairTypes]);
+  const availableHeatingOptions = useMemo(() => getUniqueOptions(HEATING_OPTIONS, customOptions.heatingOptions || [], 'heating'), [getUniqueOptions, customOptions.heatingOptions]);
+  const availableHouseTypes = useMemo(() => getUniqueOptions([...HOUSE_TYPES_EXTENDED], customOptions.houseTypes || [], 'houseSubtype'), [getUniqueOptions, customOptions.houseTypes]);
+  const availableYearBuiltOptions = useMemo(() => getUniqueOptions(YEAR_BUILT_OPTIONS, customOptions.yearBuiltOptions || [], 'yearBuilt'), [getUniqueOptions, customOptions.yearBuiltOptions]);
+  const availableWallTypeOptions = useMemo(() => getUniqueOptions(WALL_TYPE_OPTIONS, customOptions.wallTypeOptions || [], 'wallType'), [getUniqueOptions, customOptions.wallTypeOptions]);
+  const availableBathroomOptions = useMemo(() => getUniqueOptions(BATHROOM_OPTIONS, customOptions.bathroomOptions || [], 'bathroomType'), [getUniqueOptions, customOptions.bathroomOptions]);
+  const availableLandTypes = useMemo(() => getUniqueOptions(LAND_TYPES, customOptions.landTypes || [], 'landType'), [getUniqueOptions, customOptions.landTypes]);
+  const availableDealTypeOptions = useMemo(() => getUniqueOptions(DEAL_TYPE_OPTIONS, customOptions.dealTypeOptions || [], 'dealType'), [getUniqueOptions, customOptions.dealTypeOptions]);
+  const availablePlanningStatusOptions = useMemo(() => getUniqueOptions(PLANNING_STATUS_OPTIONS, customOptions.planningStatusOptions || [], 'planningStatus'), [getUniqueOptions, customOptions.planningStatusOptions]);
 
   // Dynamic option lists for EditableMultiSelect (for filters and form)
-  const availableTechOptions = useMemo(() => getUniqueOptions(TECH_OPTIONS, customOptions.techOptions, 'tech'), [getUniqueOptions, customOptions.techOptions]);
-  const availableComfortOptions = useMemo(() => getUniqueOptions(COMFORT_OPTIONS, customOptions.comfortOptions, 'comfort'), [getUniqueOptions, customOptions.comfortOptions]);
-  const availableCommOptions = useMemo(() => getUniqueOptions(COMM_OPTIONS, customOptions.commOptions, 'comm'), [getUniqueOptions, customOptions.commOptions]);
-  const availableInfraOptions = useMemo(() => getUniqueOptions(INFRA_OPTIONS, customOptions.infraOptions, 'infra'), [getUniqueOptions, customOptions.infraOptions]);
+  const availableTechOptions = useMemo(() => getUniqueOptions(TECH_OPTIONS, customOptions.techOptions || [], 'tech'), [getUniqueOptions, customOptions.techOptions]);
+  const availableComfortOptions = useMemo(() => getUniqueOptions(COMFORT_OPTIONS, customOptions.comfortOptions || [], 'comfort'), [getUniqueOptions, customOptions.comfortOptions]);
+  const availableCommOptions = useMemo(() => getUniqueOptions(COMM_OPTIONS, customOptions.commOptions || [], 'comm'), [getUniqueOptions, customOptions.commOptions]);
+  const availableInfraOptions = useMemo(() => getUniqueOptions(INFRA_OPTIONS, customOptions.infraOptions || [], 'infra'), [getUniqueOptions, customOptions.infraOptions]);
+
+  // Новые опции для земельных участков
+  const availableLandCommunicationsOptions = useMemo(() => getUniqueOptions(LAND_COMMUNICATIONS_OPTIONS, customOptions.landCommunicationsOptions || [], 'landCommunications'), [getUniqueOptions, customOptions.landCommunicationsOptions]);
+  const availableLandStructuresOptions = useMemo(() => getUniqueOptions(LAND_STRUCTURES_OPTIONS, customOptions.landStructuresOptions || [], 'landStructures'), [getUniqueOptions, customOptions.landStructuresOptions]);
+  const availableLandInfrastructureOptions = useMemo(() => getUniqueOptions(LAND_INFRASTRUCTURE_OPTIONS, customOptions.landInfrastructureOptions || [], 'landInfrastructure'), [getUniqueOptions, customOptions.landInfrastructureOptions]);
+  const availableLandLandscapeOptions = useMemo(() => getUniqueOptions(LAND_LANDSCAPE_OPTIONS, customOptions.landLandscapeOptions || [], 'landLandscape'), [getUniqueOptions, customOptions.landLandscapeOptions]);
 
   // Add a separate useEffect for logging availableComfortOptions
   useEffect(() => {
@@ -165,11 +229,10 @@ const App: React.FC = () => {
 
   // Functions to add custom options
   const handleAddCustomOption = useCallback((category: keyof typeof customOptions, option: string) => {
-    // console.log(`[App] Adding custom option: ${option} to category: ${category}`); // Removed log
     setCustomOptions(prev => {
-      const updatedCategory = Array.from(new Set([...prev[category], option])).sort();
+      const currentCategory = prev[category] || [];
+      const updatedCategory = Array.from(new Set([...currentCategory, option])).sort();
       const updatedOptions = { ...prev, [category]: updatedCategory };
-      // console.log(`[App] New customOptions state for ${category}:`, updatedCategory); // Removed log
       updateCustomOptionsOnServer(updatedOptions);
       return updatedOptions;
     });
@@ -177,10 +240,11 @@ const App: React.FC = () => {
 
   // Functions to remove custom options
   const handleRemoveCustomOption = useCallback((category: keyof typeof customOptions, optionToRemove: string, initialConstants: string[]) => {
-    // console.log(`[App] Attempting to remove custom option: ${optionToRemove} from category: ${category}`); // Removed log
+    console.log(`[App] Attempting to remove custom option: ${optionToRemove} from category: ${category}`); // Added log
+    console.log(`[App] Current customOptions before removal:`, customOptions); // Added log
     if (initialConstants.includes(optionToRemove)) {
       showError(`Нельзя удалить предопределенную опцию "${optionToRemove}".`);
-      // console.warn(`[App] Attempted to remove constant option: ${optionToRemove}`); // Removed log
+      console.warn(`[App] Attempted to remove constant option: ${optionToRemove}`); // Added log
       return;
     }
     if (!window.confirm(`Вы уверены, что хотите удалить пользовательскую опцию "${optionToRemove}"?`)) {
@@ -190,7 +254,7 @@ const App: React.FC = () => {
     setCustomOptions(prev => {
       const updatedCategory = prev[category].filter(opt => opt !== optionToRemove);
       const updatedOptions = { ...prev, [category]: updatedCategory };
-      // console.log(`[App] New customOptions state for ${category} after removal:`, updatedCategory); // Removed log
+      console.log(`[App] New customOptions state for ${category} after removal:`, updatedCategory); // Added log
       updateCustomOptionsOnServer(updatedOptions);
       return updatedOptions;
     });
@@ -241,7 +305,8 @@ const App: React.FC = () => {
 
   const [filters, setFilters] = useState<FilterState>({
     category: 'apartments',
-    district: 'Любой',
+    status: 'available',
+    district: [],
     minPrice: '',
     maxPrice: '',
     minArea: '',
@@ -254,25 +319,31 @@ const App: React.FC = () => {
     maxTotalFloors: '',
     rooms: 'Любое',
     type: 'Любой',
-    housingClass: 'Любой',
+    housingClass: [],
     hasFurniture: null,
     hasRepair: null,
-    repairType: 'Любой',
-    heating: 'Любой',
+    repairType: [],
+    heating: [],
     isEOselya: null,
-    landType: 'Любой',
+    landType: [],
     minLandArea: '',
     maxLandArea: '',
-    houseSubtype: 'Любой',
+    houseSubtype: [],
     locationType: 'Любой',
     distanceFromCityKm: '',
-    yearBuilt: 'Любой',
-    wallType: 'Любой',
-    bathroomType: 'Любой',
+    yearBuilt: [],
+    wallType: [],
+    bathroomType: [],
+    dealType: [],
+    planningStatus: [],
     tech: [],
     comfort: [],
     comm: [],
     infra: [],
+    landCommunications: [],
+    landStructures: [],
+    landInfrastructure: [],
+    landLandscape: [],
     keywords: '',
   });
 
@@ -282,9 +353,10 @@ const App: React.FC = () => {
 
     return properties.filter((p: Property) => {
       if (p.category !== filters.category) return false;
+      if (filters.status !== 'all' && p.status !== filters.status) return false;
       if (filters.minPrice && p.price < Number(filters.minPrice)) return false;
       if (filters.maxPrice && p.price > Number(filters.maxPrice)) return false;
-      if (filters.district !== 'Любой' && p.district !== filters.district) return false;
+      if (filters.district.length > 0 && !filters.district.some((f: string) => p.district === f)) return false;
 
       if (lowerCaseKeywords) {
         const matchesAddress = p.address.toLowerCase().includes(lowerCaseKeywords);
@@ -296,7 +368,13 @@ const App: React.FC = () => {
       if (filters.category === 'land') {
         if (filters.minLandArea && (p.landArea || 0) < Number(filters.minLandArea)) return false;
         if (filters.maxLandArea && (p.landArea || 0) > Number(filters.maxLandArea)) return false;
-        if (filters.landType !== 'Любой' && p.landType !== filters.landType) return false;
+        if (filters.landType.length > 0 && !filters.landType.some((f: string) => p.landType === f)) return false;
+        
+        // Новые фильтры для земельных участков
+        if (filters.landCommunications.length > 0 && !filters.landCommunications.every((f: string) => (p.landCommunications || []).includes(f))) return false;
+        if (filters.landStructures.length > 0 && !filters.landStructures.every((f: string) => (p.landStructures || []).includes(f))) return false;
+        if (filters.landInfrastructure.length > 0 && !filters.landInfrastructure.every((f: string) => (p.landInfrastructure || []).includes(f))) return false;
+        if (filters.landLandscape.length > 0 && !filters.landLandscape.every((f: string) => (p.landLandscape || []).includes(f))) return false;
       } else {
         if (filters.type !== 'Любой' && p.type !== filters.type) return false;
         if (filters.minFloor && (p.floor || 0) < Number(filters.minFloor)) return false;
@@ -308,17 +386,19 @@ const App: React.FC = () => {
         if (filters.maxArea && p.totalArea > Number(filters.maxArea)) return false;
         if (filters.minKitchenArea && (p.kitchenArea || 0) < Number(filters.minKitchenArea)) return false;
         if (filters.maxKitchenArea && (p.kitchenArea || 0) > Number(filters.maxKitchenArea)) return false;
-        if (filters.housingClass !== 'Любой' && p.housingClass !== filters.housingClass) return false;
+        if (filters.housingClass.length > 0 && !filters.housingClass.some((f: string) => p.housingClass === f)) return false;
         if (filters.hasFurniture !== null && p.hasFurniture !== filters.hasFurniture) return false;
         if (filters.hasRepair !== null && p.hasRepair !== filters.hasRepair) return false;
-        if (filters.repairType !== 'Любой' && p.repairType !== filters.repairType) return false;
-        if (filters.heating !== 'Любой' && p.heating !== filters.heating) return false;
+        if (filters.repairType.length > 0 && !filters.repairType.some((f: string) => p.repairType === f)) return false;
+        if (filters.heating.length > 0 && !filters.heating.some((f: string) => p.heating === f)) return false;
         if (filters.isEOselya !== null && p.isEOselya !== filters.isEOselya) return false;
-        if (filters.yearBuilt !== 'Любой' && p.yearBuilt !== filters.yearBuilt) return false;
-        if (filters.wallType !== 'Любой' && p.wallType !== filters.wallType) return false;
-        if (filters.bathroomType !== 'Любой' && p.bathroomType !== filters.bathroomType) return false;
+        if (filters.yearBuilt.length > 0 && !filters.yearBuilt.some((f: string) => p.yearBuilt === f)) return false;
+        if (filters.wallType.length > 0 && !filters.wallType.some((f: string) => p.wallType === f)) return false;
+        if (filters.bathroomType.length > 0 && !filters.bathroomType.some((f: string) => p.bathroomType === f)) return false;
+        if (filters.dealType.length > 0 && !filters.dealType.some((f: string) => p.dealType === f)) return false;
+        if (filters.planningStatus.length > 0 && !filters.planningStatus.some((f: string) => p.planningStatus === f)) return false;
 
-        if (filters.category === 'houses' && filters.houseSubtype !== 'Любой' && p.houseSubtype !== filters.houseSubtype) return false;
+        if (filters.houseSubtype.length > 0 && !filters.houseSubtype.some((f: string) => p.houseSubtype === f)) return false;
         
         if (filters.category === 'houses') {
           if (filters.locationType !== 'Любой') {
@@ -383,23 +463,54 @@ const App: React.FC = () => {
     }
   };
 
+  const handleUpdatePropertyStatus = async (id: string, status: 'available' | 'sold' | 'advance') => {
+    try {
+      const property = properties.find(p => p.id === id);
+      if (!property) return;
+
+      const updatedProperty = { ...property, status };
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedProperty),
+      });
+      if (!response.ok) throw new Error('Failed to update property status');
+      fetchProperties();
+      const statusText = status === 'sold' ? 'Продано' : status === 'advance' ? 'Аванс' : 'Актуально';
+      showSuccess(`Статус объекта изменен на "${statusText}"!`);
+    } catch (error) {
+      console.error("Error updating property status:", error);
+      showError("Ошибка при обновлении статуса объекта. Пожалуйста, проверьте консоль.");
+    }
+  };
+
   const resetFilters = () => {
     setFilters({
       category: filters.category,
-      district: 'Любой',
+      status: 'available',
+      district: [],
       minPrice: '', maxPrice: '', minArea: '', maxArea: '', minKitchenArea: '', maxKitchenArea: '',
       minFloor: '', maxFloor: '', minTotalFloors: '', maxTotalFloors: '',
       rooms: 'Любое', type: 'Любой', 
-      housingClass: 'Любой',
-      hasFurniture: null, hasRepair: null, repairType: 'Любой', heating: 'Любой',
-      isEOselya: null, landType: 'Любой', minLandArea: '', maxLandArea: '',
-      houseSubtype: 'Любой',
+      housingClass: [],
+      hasFurniture: null, hasRepair: null, repairType: [], heating: [],
+      isEOselya: null, landType: [], minLandArea: '', maxLandArea: '',
+      houseSubtype: [],
       locationType: 'Любой',
       distanceFromCityKm: '',
-      yearBuilt: 'Любой',
-      wallType: 'Любой',
-      bathroomType: 'Любой',
+      yearBuilt: [],
+      wallType: [],
+      bathroomType: [],
+      dealType: [],
+      planningStatus: [],
       tech: [], comfort: [], comm: [], infra: [],
+      // Новые поля для земельных участков
+      landCommunications: [],
+      landStructures: [],
+      landInfrastructure: [],
+      landLandscape: [],
       keywords: '',
     });
   };
@@ -416,39 +527,78 @@ const App: React.FC = () => {
             <Home className="text-white w-7 h-7" />
           </div>
           <div>
-            <h1 className="text-3xl font-[900] text-slate-900 tracking-tight">
-              {isClientMode ? 'Real Estate Catalog' : 'MaryanaEstate'}
+            <h1 className="text-xl font-[900] text-slate-900 tracking-tight">
+              {isClientMode ? 'Real Estate Catalog' : 'Maryana_Ivshyna'}
             </h1>
             <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.4em]">
-              {isClientMode ? 'Client Portfolio' : 'Expert Management'}
+              {isClientMode ? 'Client Portfolio' : 'real_estate'}
             </p>
           </div>
         </div>
+        
+        {/* Переключатель статусов - только на главной странице объектов для авторизованных пользователей */}
+        {!isClientsPage && !isDetailPage && !isClientMode && isAuthenticated && (
+          <div className="flex flex-wrap gap-2 p-1.5 bg-slate-50 rounded-lg">
+            <button
+              onClick={() => setFilters(prev => ({ ...prev, status: 'all' }))} 
+              className={`px-3 py-2 rounded-lg font-medium text-xs transition-all active:scale-95 ${
+                filters.status === 'all' ? 'bg-blue-500 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+              }`}
+            >
+              Все
+            </button>
+            <button
+              onClick={() => setFilters(prev => ({ ...prev, status: 'available' }))} 
+              className={`px-3 py-2 rounded-lg font-medium text-xs transition-all active:scale-95 ${
+                filters.status === 'available' ? 'bg-blue-500 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+              }`}
+            >
+              Актуально
+            </button>
+            <button
+              onClick={() => setFilters(prev => ({ ...prev, status: 'sold' }))} 
+              className={`px-3 py-2 rounded-lg font-medium text-xs transition-all active:scale-95 ${
+                filters.status === 'sold' ? 'bg-blue-500 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+              }`}
+            >
+              Продано
+            </button>
+            <button
+              onClick={() => setFilters(prev => ({ ...prev, status: 'advance' }))} 
+              className={`px-3 py-2 rounded-lg font-medium text-xs transition-all active:scale-95 ${
+                filters.status === 'advance' ? 'bg-blue-500 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+              }`}
+            >
+              Аванс
+            </button>
+          </div>
+        )}
+        
         <div className="flex items-center gap-4">
           {!isClientMode && isAuthenticated && (
             <>
               <Link 
                 to="/" 
-                className={`px-6 py-3 rounded-xl font-bold flex items-center gap-3 text-xs transition-all active:scale-95 ${
+                className={`px-3 py-2 rounded-lg font-medium flex items-center gap-2 text-xs transition-all active:scale-95 ${
                   isPropertiesPage && !isDetailPage ? 'bg-blue-500 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
                 }`}
               >
-                Объекты
+                <Home className="w-3 h-3" /> Объекты
               </Link>
               <Link 
                 to="/clients" 
-                className={`px-6 py-3 rounded-xl font-bold flex items-center gap-3 text-xs transition-all active:scale-95 ${
+                className={`px-3 py-2 rounded-lg font-medium flex items-center gap-2 text-xs transition-all active:scale-95 ${
                   isClientsPage ? 'bg-blue-500 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
                 }`}
               >
-                <Users className="w-4 h-4" /> Клиенты
+                <Users className="w-3 h-3" /> Клиенты
               </Link>
               {!isDetailPage && !isClientsPage && (
                 <button 
                   onClick={() => { setEditingProperty(null); setIsModalOpen(true); }}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 shadow-xl shadow-blue-100 transition-all active:scale-95"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-3 text-xs transition-all active:scale-95"
                 >
-                  <PlusCircle className="w-5 h-5" /> Добавить объект
+                  <PlusCircle className="w-4 h-4" /> Добавить объект
                 </button>
               )}
               <button 
@@ -499,12 +649,12 @@ const App: React.FC = () => {
                           onClick={() => setFilters(prev => ({ 
                             ...prev, 
                             category: cat.id as PropertyCategory, 
-                            houseSubtype: 'Любой',
+                            houseSubtype: [],
                             locationType: 'Любой',
                             distanceFromCityKm: '',
-                            yearBuilt: 'Любой',
-                            wallType: 'Любой',
-                            bathroomType: 'Любой',
+                            yearBuilt: [],
+                            wallType: [],
+                            bathroomType: [],
                           }))} 
                           className={`px-8 py-3.5 rounded-full font-black text-xs uppercase tracking-widest transition-all ${
                             filters.category === cat.id ? 'bg-white text-blue-600 shadow-xl' : 'text-slate-400 hover:text-slate-600'
@@ -541,17 +691,16 @@ const App: React.FC = () => {
                           />
                         </div>
                       )}
-                      <div className="space-y-3">
-                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Район</label>
-                        <select 
-                          value={filters.district}
-                          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, district: e.target.value})}
-                          className="w-full bg-slate-50 border-transparent focus:border-blue-500 border-2 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
-                        >
-                          <option value="Любой">Любой район</option>
-                          {availableDistricts.map((d: string) => <option key={d} value={d}>{d}</option>)}
-                        </select>
-                      </div>
+                      <EditableMultiSelect 
+                        label="Район" 
+                        prefix="Р" 
+                        initialOptions={availableDistricts}
+                        constantOptions={INITIAL_DISTRICTS}
+                        selected={filters.district || []} 
+                        onChange={(s: string[]) => setFilters({...filters, district: s})} 
+                        onAddCustomOption={(option: string) => handleAddCustomOption('districts', option)}
+                        onRemoveOption={(option: string) => handleRemoveCustomOption('districts', option, INITIAL_DISTRICTS)}
+                      />
 
                       <div className="space-y-3">
                         <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Бюджет ($)</label>
@@ -563,17 +712,16 @@ const App: React.FC = () => {
 
                       {/* New filter for house subtype (now "Тип дома") */}
                       {isHouses && (
-                        <div className="space-y-3">
-                          <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Тип дома</label>
-                          <select 
-                            value={filters.houseSubtype}
-                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, houseSubtype: e.target.value})}
-                            className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
-                          >
-                            <option value="Любой">Любой</option>
-                            {HOUSE_TYPES_EXTENDED.map((t: string) => <option key={t} value={t}>{t}</option>)}
-                          </select>
-                        </div>
+                        <EditableMultiSelect 
+                          label="Тип дома" 
+                          prefix="Т" 
+                          initialOptions={availableHouseTypes}
+                          constantOptions={[...HOUSE_TYPES_EXTENDED]}
+                          selected={filters.houseSubtype || []} 
+                          onChange={(s: string[]) => setFilters({...filters, houseSubtype: s})} 
+                          onAddCustomOption={(option: string) => handleAddCustomOption('houseTypes', option)}
+                          onRemoveOption={(option: string) => handleRemoveCustomOption('houseTypes', option, HOUSE_TYPES_EXTENDED)}
+                        />
                       )}
 
                       {/* Toggle for Additional Filters - New Position */}
@@ -602,29 +750,82 @@ const App: React.FC = () => {
                               </div>
                             </div>
                             <div className="space-y-3">
-                              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Тип земли</label>
-                              <select 
-                                value={filters.landType}
-                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, landType: e.target.value})}
-                                className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
-                              >
-                                <option value="Любой">Любой тип</option>
-                                {LAND_TYPES.map((t: string) => <option key={t} value={t}>{t}</option>)}
-                              </select>
+                              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Тип недвижимости</label>
+                              <EditableMultiSelect 
+                                label="" 
+                                prefix="" 
+                                initialOptions={availableLandTypes}
+                                constantOptions={LAND_TYPES}
+                                selected={filters.landType || []} 
+                                onChange={(s: string[]) => setFilters(p => ({...p, landType: s}))} 
+                                onAddCustomOption={(option: string) => handleAddCustomOption('landTypes', option)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('landTypes', option, LAND_TYPES)}
+                              />
+                            </div>
+                            <div className="space-y-3">
+                              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Коммуникации</label>
+                              <EditableMultiSelect 
+                                label="" 
+                                prefix="" 
+                                initialOptions={availableLandCommunicationsOptions}
+                                constantOptions={LAND_COMMUNICATIONS_OPTIONS}
+                                selected={filters.landCommunications || []} 
+                                onChange={(s: string[]) => setFilters(p => ({...p, landCommunications: s}))} 
+                                onAddCustomOption={(option: string) => handleAddCustomOption('landCommunicationsOptions', option)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('landCommunicationsOptions', option, LAND_COMMUNICATIONS_OPTIONS)}
+                              />
+                            </div>
+                            <div className="space-y-3">
+                              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Сооружения</label>
+                              <EditableMultiSelect 
+                                label="" 
+                                prefix="" 
+                                initialOptions={availableLandStructuresOptions}
+                                constantOptions={LAND_STRUCTURES_OPTIONS}
+                                selected={filters.landStructures || []} 
+                                onChange={(s: string[]) => setFilters(p => ({...p, landStructures: s}))} 
+                                onAddCustomOption={(option: string) => handleAddCustomOption('landStructuresOptions', option)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('landStructuresOptions', option, LAND_STRUCTURES_OPTIONS)}
+                              />
+                            </div>
+                            <div className="space-y-3">
+                              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Инфраструктура до 500 метров</label>
+                              <EditableMultiSelect 
+                                label="" 
+                                prefix="" 
+                                initialOptions={availableLandInfrastructureOptions}
+                                constantOptions={LAND_INFRASTRUCTURE_OPTIONS}
+                                selected={filters.landInfrastructure || []} 
+                                onChange={(s: string[]) => setFilters(p => ({...p, landInfrastructure: s}))} 
+                                onAddCustomOption={(option: string) => handleAddCustomOption('landInfrastructureOptions', option)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('landInfrastructureOptions', option, LAND_INFRASTRUCTURE_OPTIONS)}
+                              />
+                            </div>
+                            <div className="space-y-3">
+                              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Ландшафт до 1 км</label>
+                              <EditableMultiSelect 
+                                label="" 
+                                prefix="" 
+                                initialOptions={availableLandLandscapeOptions}
+                                constantOptions={LAND_LANDSCAPE_OPTIONS}
+                                selected={filters.landLandscape || []} 
+                                onChange={(s: string[]) => setFilters(p => ({...p, landLandscape: s}))} 
+                                onAddCustomOption={(option: string) => handleAddCustomOption('landLandscapeOptions', option)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('landLandscapeOptions', option, LAND_LANDSCAPE_OPTIONS)}
+                              />
                             </div>
                           </div>
                         ) : (
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-10">
                             <div className="space-y-3">
                               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Комнат</label>
-                              <select 
-                                value={filters.rooms}
-                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, rooms: e.target.value})}
+                              <input 
+                                type="text" 
+                                placeholder="Количество комнат" 
+                                value={filters.rooms === 'Любое' ? '' : filters.rooms}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters({...filters, rooms: e.target.value || 'Любое'})}
                                 className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
-                              >
-                                <option value="Любое">Любое</option>
-                                {ROOMS_OPTIONS.map((o: string) => <option key={o} value={o}>{o}</option>)}
-                              </select>
+                              />
                             </div>
                             <div className="space-y-3">
                               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Этаж (от/до)</label>
@@ -649,67 +850,153 @@ const App: React.FC = () => {
                             </div>
                             <div className="space-y-3">
                               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Класс жилья</label>
-                              <select value={filters.housingClass} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, housingClass: e.target.value})} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">
-                                <option value="Любой">Любой</option>
-                                {availableHousingClasses.map((c: string) => <option key={c} value={c}>{c}</option>)}
-                              </select>
+                              <EditableMultiSelect 
+                                label="" 
+                                prefix="" 
+                                initialOptions={availableHousingClasses}
+                                constantOptions={HOUSING_CLASSES}
+                                selected={filters.housingClass || []} 
+                                onChange={(s: string[]) => setFilters({...filters, housingClass: s})} 
+                                onAddCustomOption={(option: string) => handleAddCustomOption('housingClasses', option)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('housingClasses', option, HOUSING_CLASSES)}
+                              />
                             </div>
                             <div className="space-y-3">
                               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Вид ремонта</label>
-                              <select value={filters.repairType} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, repairType: e.target.value})} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">
-                                <option value="Любой">Любой</option>
-                                {availableRepairTypes.map((r: string) => <option key={r} value={r}>{r}</option>)}
-                              </select>
+                              <EditableMultiSelect 
+                                label="" 
+                                prefix="" 
+                                initialOptions={availableRepairTypes}
+                                constantOptions={REPAIR_TYPES}
+                                selected={filters.repairType || []} 
+                                onChange={(s: string[]) => setFilters({...filters, repairType: s})} 
+                                onAddCustomOption={(option: string) => handleAddCustomOption('repairTypes', option)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('repairTypes', option, REPAIR_TYPES)}
+                              />
                             </div>
                             <div className="space-y-3">
                               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Отопление</label>
-                              <select value={filters.heating} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, heating: e.target.value})} className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold">
-                                <option value="Любой">Любой</option>
-                                {availableHeatingOptions.map((h: string) => <option key={h} value={h}>{h}</option>)}
-                              </select>
+                              <EditableMultiSelect 
+                                label="" 
+                                prefix="" 
+                                initialOptions={availableHeatingOptions}
+                                constantOptions={HEATING_OPTIONS}
+                                selected={filters.heating || []} 
+                                onChange={(s: string[]) => setFilters({...filters, heating: s})} 
+                                onAddCustomOption={(option: string) => handleAddCustomOption('heatingOptions', option)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('heatingOptions', option, HEATING_OPTIONS)}
+                              />
                             </div>
                             <div className="space-y-3">
                               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Год постройки/сдачи</label>
-                              <select 
-                                value={filters.yearBuilt}
-                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, yearBuilt: e.target.value})}
-                                className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
-                              >
-                                <option value="Любой">Любой</option>
-                                {availableYearBuiltOptions.map((y: string) => <option key={y} value={y}>{y}</option>)}
-                              </select>
+                              <EditableMultiSelect 
+                                label="" 
+                                prefix="" 
+                                initialOptions={availableYearBuiltOptions}
+                                constantOptions={YEAR_BUILT_OPTIONS}
+                                selected={filters.yearBuilt || []} 
+                                onChange={(s: string[]) => setFilters({...filters, yearBuilt: s})} 
+                                onAddCustomOption={(option: string) => handleAddCustomOption('yearBuiltOptions', option)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('yearBuiltOptions', option, YEAR_BUILT_OPTIONS)}
+                              />
                             </div>
                             <div className="space-y-3">
                               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Тип стен</label>
-                              <select 
-                                value={filters.wallType}
-                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, wallType: e.target.value})}
-                                className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
-                              >
-                                <option value="Любой">Любой</option>
-                                {availableWallTypeOptions.map((w: string) => <option key={w} value={w}>{w}</option>)}
-                              </select>
+                              <EditableMultiSelect 
+                                label="" 
+                                prefix="" 
+                                initialOptions={availableWallTypeOptions}
+                                constantOptions={WALL_TYPE_OPTIONS}
+                                selected={filters.wallType || []} 
+                                onChange={(s: string[]) => setFilters({...filters, wallType: s})} 
+                                onAddCustomOption={(option: string) => handleAddCustomOption('wallTypeOptions', option)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('wallTypeOptions', option, WALL_TYPE_OPTIONS)}
+                              />
                             </div>
                             <div className="space-y-3">
                               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Санузел</label>
-                              <select 
-                                value={filters.bathroomType}
-                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({...filters, bathroomType: e.target.value})}
-                                className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
-                              >
-                                <option value="Любой">Любой</option>
-                                {availableBathroomOptions.map((b: string) => <option key={b} value={b}>{b}</option>)}
-                              </select>
+                              <EditableMultiSelect 
+                                label="" 
+                                prefix="" 
+                                initialOptions={availableBathroomOptions}
+                                constantOptions={BATHROOM_OPTIONS}
+                                selected={filters.bathroomType || []} 
+                                onChange={(s: string[]) => setFilters({...filters, bathroomType: s})} 
+                                onAddCustomOption={(option: string) => handleAddCustomOption('bathroomOptions', option)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('bathroomOptions', option, BATHROOM_OPTIONS)}
+                              />
+                            </div>
+                            <div className="space-y-3">
+                              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Тип сделки</label>
+                              <EditableMultiSelect 
+                                label="" 
+                                prefix="" 
+                                initialOptions={availableDealTypeOptions}
+                                constantOptions={DEAL_TYPE_OPTIONS as string[]}
+                                selected={filters.dealType || []} 
+                                onChange={(s: string[]) => setFilters({...filters, dealType: s})} 
+                                onAddCustomOption={(option: string) => handleAddCustomOption('dealTypeOptions', option)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('dealTypeOptions', option, DEAL_TYPE_OPTIONS as string[])}
+                              />
+                            </div>
+                            <div className="space-y-3">
+                              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Планировка</label>
+                              <EditableMultiSelect 
+                                label="" 
+                                prefix="" 
+                                initialOptions={availablePlanningStatusOptions}
+                                constantOptions={PLANNING_STATUS_OPTIONS as string[]}
+                                selected={filters.planningStatus || []} 
+                                onChange={(s: string[]) => setFilters({...filters, planningStatus: s})} 
+                                onAddCustomOption={(option: string) => handleAddCustomOption('planningStatusOptions', option)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('planningStatusOptions', option, PLANNING_STATUS_OPTIONS as string[])}
+                              />
                             </div>
                           </div>
                         )}
 
                         {!isLand && (
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 py-8 border-y border-slate-50">
-                            <MultiSelect label="Техника" prefix="Т" options={availableTechOptions} selected={filters.tech} onChange={(s: string[]) => setFilters({...filters, tech: s})} />
-                            <MultiSelect label="Комфорт" prefix="К" options={availableComfortOptions} selected={filters.comfort} onChange={(s: string[]) => setFilters(p => ({...p, comfort: s}))} />
-                            <MultiSelect label="Коммуникации" prefix="К" options={availableCommOptions} selected={filters.comm} onChange={(s: string[]) => setFilters(p => ({...p, comm: s}))} />
-                            <MultiSelect label="Инфраструктура" prefix="И" options={availableInfraOptions} selected={filters.infra} onChange={(s: string[]) => setFilters(p => ({...p, infra: s}))} />
+                            <EditableMultiSelect 
+                              label="Техника" 
+                              prefix="Т" 
+                              initialOptions={availableTechOptions}
+                              constantOptions={TECH_OPTIONS}
+                              selected={filters.tech || []} 
+                              onChange={(s: string[]) => setFilters({...filters, tech: s})} 
+                              onAddCustomOption={(option: string) => handleAddCustomOption('techOptions', option)}
+                              onRemoveOption={(option: string) => handleRemoveCustomOption('techOptions', option, TECH_OPTIONS)}
+                            />
+                            <EditableMultiSelect 
+                              label="Комфорт" 
+                              prefix="К" 
+                              initialOptions={availableComfortOptions}
+                              constantOptions={COMFORT_OPTIONS}
+                              selected={filters.comfort || []} 
+                              onChange={(s: string[]) => setFilters(p => ({...p, comfort: s}))} 
+                              onAddCustomOption={(option: string) => handleAddCustomOption('comfortOptions', option)}
+                              onRemoveOption={(option: string) => handleRemoveCustomOption('comfortOptions', option, COMFORT_OPTIONS)}
+                            />
+                            <EditableMultiSelect 
+                              label="Коммуникации" 
+                              prefix="К" 
+                              initialOptions={availableCommOptions}
+                              constantOptions={COMM_OPTIONS}
+                              selected={filters.comm || []} 
+                              onChange={(s: string[]) => setFilters(p => ({...p, comm: s}))} 
+                              onAddCustomOption={(option: string) => handleAddCustomOption('commOptions', option)}
+                              onRemoveOption={(option: string) => handleRemoveCustomOption('commOptions', option, COMM_OPTIONS)}
+                            />
+                            <EditableMultiSelect 
+                              label="Инфраструктура" 
+                              prefix="И" 
+                              initialOptions={availableInfraOptions}
+                              constantOptions={INFRA_OPTIONS}
+                              selected={filters.infra || []} 
+                              onChange={(s: string[]) => setFilters(p => ({...p, infra: s}))} 
+                              onAddCustomOption={(option: string) => handleAddCustomOption('infraOptions', option)}
+                              onRemoveOption={(option: string) => handleRemoveCustomOption('infraOptions', option, INFRA_OPTIONS)}
+                            />
                           </div>
                         )}
 
@@ -773,6 +1060,7 @@ const App: React.FC = () => {
                       isClientView={isClientMode}
                       onEdit={isClientMode || !isAuthenticated ? undefined : (p: Property) => { setEditingProperty(p); setIsModalOpen(true); }}
                       onDelete={isClientMode || !isAuthenticated ? undefined : handleDeleteProperty}
+                      onUpdateStatus={isClientMode || !isAuthenticated ? undefined : handleUpdatePropertyStatus}
                     />
                   ))}
 
@@ -831,6 +1119,22 @@ const App: React.FC = () => {
         onAddCustomBathroomOption={(option: string) => handleAddCustomOption('bathroomOptions', option)}
         onRemoveCustomBathroomOption={(option: string) => handleRemoveCustomOption('bathroomOptions', option, BATHROOM_OPTIONS)}
 
+        availableLandTypes={availableLandTypes}
+        onAddCustomLandType={(option: string) => handleAddCustomOption('landTypes', option)}
+        onRemoveCustomLandType={(option: string) => handleRemoveCustomOption('landTypes', option, LAND_TYPES)}
+
+        availableDealTypeOptions={availableDealTypeOptions}
+        onAddCustomDealTypeOption={(option: string) => handleAddCustomOption('dealTypeOptions', option)}
+        onRemoveCustomDealTypeOption={(option: string) => handleRemoveCustomOption('dealTypeOptions', option, DEAL_TYPE_OPTIONS)}
+
+        availablePlanningStatusOptions={availablePlanningStatusOptions}
+        onAddCustomPlanningStatusOption={(option: string) => handleAddCustomOption('planningStatusOptions', option)}
+        onRemoveCustomPlanningStatusOption={(option: string) => handleRemoveCustomOption('planningStatusOptions', option, PLANNING_STATUS_OPTIONS)}
+
+        availableHouseTypes={availableHouseTypes}
+        onAddCustomHouseType={(option: string) => handleAddCustomOption('houseTypes', option)}
+        onRemoveCustomHouseType={(option: string) => handleRemoveCustomOption('houseTypes', option, HOUSE_TYPES_EXTENDED)}
+
         availableTechOptions={availableTechOptions} 
         onAddCustomTechOption={(option: string) => handleAddCustomOption('techOptions', option)}
         onRemoveCustomTechOption={(option: string) => handleRemoveCustomOption('techOptions', option, TECH_OPTIONS)} 
@@ -842,7 +1146,24 @@ const App: React.FC = () => {
         onRemoveCustomCommOption={(option: string) => handleRemoveCustomOption('commOptions', option, COMM_OPTIONS)} 
         availableInfraOptions={availableInfraOptions}
         onAddCustomInfraOption={(option: string) => handleAddCustomOption('infraOptions', option)}
-        onRemoveCustomInfraOption={(option: string) => handleRemoveCustomOption('infraOptions', option, INFRA_OPTIONS)} 
+        onRemoveCustomInfraOption={(option: string) => handleRemoveCustomOption('infraOptions', option, INFRA_OPTIONS)}
+        
+        // Новые пропсы для земельных участков
+        availableLandCommunicationsOptions={availableLandCommunicationsOptions}
+        onAddCustomLandCommunicationsOption={(option: string) => handleAddCustomOption('landCommunicationsOptions', option)}
+        onRemoveCustomLandCommunicationsOption={(option: string) => handleRemoveCustomOption('landCommunicationsOptions', option, LAND_COMMUNICATIONS_OPTIONS)}
+        
+        availableLandStructuresOptions={availableLandStructuresOptions}
+        onAddCustomLandStructuresOption={(option: string) => handleAddCustomOption('landStructuresOptions', option)}
+        onRemoveCustomLandStructuresOption={(option: string) => handleRemoveCustomOption('landStructuresOptions', option, LAND_STRUCTURES_OPTIONS)}
+        
+        availableLandInfrastructureOptions={availableLandInfrastructureOptions}
+        onAddCustomLandInfrastructureOption={(option: string) => handleAddCustomOption('landInfrastructureOptions', option)}
+        onRemoveCustomLandInfrastructureOption={(option: string) => handleRemoveCustomOption('landInfrastructureOptions', option, LAND_INFRASTRUCTURE_OPTIONS)}
+        
+        availableLandLandscapeOptions={availableLandLandscapeOptions}
+        onAddCustomLandLandscapeOption={(option: string) => handleAddCustomOption('landLandscapeOptions', option)}
+        onRemoveCustomLandLandscapeOption={(option: string) => handleRemoveCustomOption('landLandscapeOptions', option, LAND_LANDSCAPE_OPTIONS)}
       />
     </div>
   );

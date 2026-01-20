@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: .
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+
+  backend:
+    image: node:18-alpine
+    working_dir: /app
+    volumes:
+      - ./db.json:/app/db.json
+    # Install json-server globally or use npx
+    command: sh -c "npm install -g json-server && json-server --watch db.json --port 3001 --host 0.0.0.0"
+    ports:
+      - "3001:3001"
+    restart: always

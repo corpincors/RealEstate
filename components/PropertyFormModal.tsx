@@ -4,9 +4,11 @@ import { X, Home, Layers, Camera, Plus, Phone } from './Icons';
 import EditableMultiSelect from './EditableMultiSelect';
 import EditableSingleSelect from './EditableSingleSelect'; // Используем переименованный компонент
 import { 
-  LAND_TYPES, REPAIR_TYPES, HOUSING_CLASSES,
+  REPAIR_TYPES, HOUSING_CLASSES,
   HEATING_OPTIONS, TECH_OPTIONS, COMFORT_OPTIONS, COMM_OPTIONS, INFRA_OPTIONS,
-  HOUSE_TYPES_EXTENDED, YEAR_BUILT_OPTIONS, WALL_TYPE_OPTIONS, BATHROOM_OPTIONS
+  HOUSE_TYPES_EXTENDED, YEAR_BUILT_OPTIONS, WALL_TYPE_OPTIONS, BATHROOM_OPTIONS, DEAL_TYPE_OPTIONS, PLANNING_STATUS_OPTIONS,
+  // Новые константы для земельных участков
+  LAND_COMMUNICATIONS_OPTIONS, LAND_STRUCTURES_OPTIONS, LAND_INFRASTRUCTURE_OPTIONS, LAND_LANDSCAPE_OPTIONS
 } from '../constants.tsx';
 
 interface PropertyFormModalProps {
@@ -43,10 +45,54 @@ interface PropertyFormModalProps {
   onAddCustomBathroomOption: (option: string) => void;
   onRemoveCustomBathroomOption: (option: string) => void;
 
-  onAddCustomTechOption: (option: string) => void;
+  availableLandTypes: string[];
+  onAddCustomLandType: (option: string) => void;
+  onRemoveCustomLandType: (option: string) => void;
+
+  availableDealTypeOptions: string[];
+  onAddCustomDealTypeOption: (option: string) => void;
+  onRemoveCustomDealTypeOption: (option: string) => void;
+
+  availablePlanningStatusOptions: string[];
+  onAddCustomPlanningStatusOption: (option: string) => void;
+  onRemoveCustomPlanningStatusOption: (option: string) => void;
+
+  availableHouseTypes: string[];
+  onAddCustomHouseType: (option: string) => void;
+  onRemoveCustomHouseType: (option: string) => void;
+
+  availableComfortOptions: string[];
   onAddCustomComfortOption: (option: string) => void;
+  onRemoveCustomComfortOption: (option: string) => void;
+
+  availableTechOptions: string[];
+  onAddCustomTechOption: (option: string) => void;
+  onRemoveCustomTechOption: (option: string) => void;
+  
+  availableCommOptions: string[];
   onAddCustomCommOption: (option: string) => void;
+  onRemoveCustomCommOption: (option: string) => void;
+  
+  availableInfraOptions: string[];
   onAddCustomInfraOption: (option: string) => void;
+  onRemoveCustomInfraOption: (option: string) => void;
+  
+  // Новые пропсы для земельных участков
+  availableLandCommunicationsOptions: string[];
+  onAddCustomLandCommunicationsOption: (option: string) => void;
+  onRemoveCustomLandCommunicationsOption: (option: string) => void;
+  
+  availableLandStructuresOptions: string[];
+  onAddCustomLandStructuresOption: (option: string) => void;
+  onRemoveCustomLandStructuresOption: (option: string) => void;
+  
+  availableLandInfrastructureOptions: string[];
+  onAddCustomLandInfrastructureOption: (option: string) => void;
+  onRemoveCustomLandInfrastructureOption: (option: string) => void;
+  
+  availableLandLandscapeOptions: string[];
+  onAddCustomLandLandscapeOption: (option: string) => void;
+  onRemoveCustomLandLandscapeOption: (option: string) => void;
 }
 
 const PropertyFormModal: React.FC<PropertyFormModalProps> = ({ 
@@ -75,15 +121,52 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
   availableBathroomOptions,
   onAddCustomBathroomOption,
   onRemoveCustomBathroomOption,
-  onAddCustomTechOption,
+  availableLandTypes,
+  onAddCustomLandType,
+  onRemoveCustomLandType,
+  availableDealTypeOptions,
+  onAddCustomDealTypeOption,
+  onRemoveCustomDealTypeOption,
+  availablePlanningStatusOptions,
+  onAddCustomPlanningStatusOption,
+  onRemoveCustomPlanningStatusOption,
+  availableHouseTypes,
+  onAddCustomHouseType,
+  onRemoveCustomHouseType,
+  availableComfortOptions,
   onAddCustomComfortOption,
+  onRemoveCustomComfortOption,
+  availableTechOptions,
+  onAddCustomTechOption,
+  onRemoveCustomTechOption,
+  availableCommOptions,
   onAddCustomCommOption,
+  onRemoveCustomCommOption,
+  availableInfraOptions,
   onAddCustomInfraOption,
+  onRemoveCustomInfraOption,
+  // Новые пропсы для земельных участков
+  availableLandCommunicationsOptions,
+  onAddCustomLandCommunicationsOption,
+  onRemoveCustomLandCommunicationsOption,
+  
+  availableLandStructuresOptions,
+  onAddCustomLandStructuresOption,
+  onRemoveCustomLandStructuresOption,
+  
+  availableLandInfrastructureOptions,
+  onAddCustomLandInfrastructureOption,
+  onRemoveCustomLandInfrastructureOption,
+  
+  availableLandLandscapeOptions,
+  onAddCustomLandLandscapeOption,
+  onRemoveCustomLandLandscapeOption,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<Partial<Property>>({
     category: 'apartments',
     type: 'Secondary',
+    status: 'available',
     price: 0,
     district: '',
     address: '',
@@ -110,6 +193,11 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     yearBuilt: YEAR_BUILT_OPTIONS[0], // Используем первую опцию из констант
     wallType: WALL_TYPE_OPTIONS[0],   // Используем первую опцию из констант
     bathroomType: BATHROOM_OPTIONS[0], // Используем первую опцию из констант
+    // Новые поля для земельных участков
+    landCommunications: [],
+    landStructures: [],
+    landInfrastructure: [],
+    landLandscape: [],
   });
 
   useEffect(() => {
@@ -119,6 +207,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
       setFormData({
         category: 'apartments',
         type: 'Secondary',
+        status: 'available',
         price: 0,
         district: '',
         address: '',
@@ -145,12 +234,14 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
         yearBuilt: availableYearBuiltOptions[0] || YEAR_BUILT_OPTIONS[0],
         wallType: availableWallTypeOptions[0] || WALL_TYPE_OPTIONS[0],
         bathroomType: availableBathroomOptions[0] || BATHROOM_OPTIONS[0],
+        // Новые поля для земельных участков
+        landCommunications: [],
+        landStructures: [],
+        landInfrastructure: [],
+        landLandscape: [],
       });
     }
-  }, [editingProperty, isOpen, 
-      availableHousingClasses, availableRepairTypes, availableHeatingOptions,
-      availableYearBuiltOptions, availableWallTypeOptions, availableBathroomOptions
-  ]);
+  }, [editingProperty, isOpen]);
 
   if (!isOpen) return null;
 
@@ -176,7 +267,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
       ...prev, 
       category: newCategory as Property['category'],
       houseSubtype: newCategory === 'houses' ? HOUSE_TYPES_EXTENDED[0] : undefined,
-      locationType: newCategory === 'houses' ? 'inCity' : undefined,
+      locationType: (newCategory === 'houses' || newCategory === 'land') ? 'inCity' : undefined,
       distanceFromCityKm: newCategory === 'houses' ? undefined : undefined,
       plotArea: newCategory === 'houses' ? undefined : undefined,
       cadastralNumber: newCategory === 'houses' ? '' : undefined,
@@ -355,7 +446,21 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
               </select>
             </div>
 
-            {isHouses && (
+            <div className="space-y-2">
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Статус</label>
+              <select 
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold text-slate-700 transition"
+              >
+                <option value="available">Актуально</option>
+                <option value="sold">Продано</option>
+                <option value="advance">Аванс</option>
+              </select>
+            </div>
+
+            {(isHouses || isLand) && (
               <>
                 <div className="space-y-2">
                   <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Расположение</label>
@@ -446,17 +551,63 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
           {/* DYNAMIC FIELDS BASED ON CATEGORY */}
           <section className="space-y-10">
             {isLand ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div className="space-y-2">
                   <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Площадь земли (сот.)</label>
                   <input type="number" name="landArea" value={formData.landArea || ''} onChange={handleChange} className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Тип земли</label>
-                  <select name="landType" value={formData.landType || ''} onChange={handleChange} className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold">
-                    {LAND_TYPES.map((t: string) => <option key={t} value={t}>{t}</option>)}
-                  </select>
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Кадастровый номер</label>
+                  <input type="text" name="cadastralNumber" value={formData.cadastralNumber || ''} onChange={handleChange} className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl p-4 outline-none font-bold" />
                 </div>
+                <EditableSingleSelect
+                  label="Тип недвижимости"
+                  initialOptions={availableLandTypes}
+                  selected={formData.landType || ''}
+                  onChange={(value: string) => handleChange({ target: { name: 'landType', value } } as any)}
+                  onAddCustomOption={onAddCustomLandType}
+                  onRemoveOption={onRemoveCustomLandType}
+                />
+                <EditableMultiSelect 
+                  label="Коммуникации"
+                  prefix="Выбрано" 
+                  initialOptions={availableLandCommunicationsOptions}
+                  constantOptions={LAND_COMMUNICATIONS_OPTIONS}
+                  selected={formData.landCommunications || []} 
+                  onChange={(s: string[]) => setFormData(p => ({...p, landCommunications: s}))} 
+                  onAddCustomOption={onAddCustomLandCommunicationsOption}
+                  onRemoveOption={onRemoveCustomLandCommunicationsOption}
+                />
+                <EditableMultiSelect 
+                  label="Сооружения на участке"
+                  prefix="Выбрано" 
+                  initialOptions={availableLandStructuresOptions}
+                  constantOptions={LAND_STRUCTURES_OPTIONS}
+                  selected={formData.landStructures || []} 
+                  onChange={(s: string[]) => setFormData(p => ({...p, landStructures: s}))} 
+                  onAddCustomOption={onAddCustomLandStructuresOption}
+                  onRemoveOption={onRemoveCustomLandStructuresOption}
+                />
+                <EditableMultiSelect 
+                  label="Инфраструктура до 500 метров"
+                  prefix="Выбрано" 
+                  initialOptions={availableLandInfrastructureOptions}
+                  constantOptions={LAND_INFRASTRUCTURE_OPTIONS}
+                  selected={formData.landInfrastructure || []} 
+                  onChange={(s: string[]) => setFormData(p => ({...p, landInfrastructure: s}))} 
+                  onAddCustomOption={onAddCustomLandInfrastructureOption}
+                  onRemoveOption={onRemoveCustomLandInfrastructureOption}
+                />
+                <EditableMultiSelect 
+                  label="Ландшафт до 1 км"
+                  prefix="Выбрано" 
+                  initialOptions={availableLandLandscapeOptions}
+                  constantOptions={LAND_LANDSCAPE_OPTIONS}
+                  selected={formData.landLandscape || []} 
+                  onChange={(s: string[]) => setFormData(p => ({...p, landLandscape: s}))} 
+                  onAddCustomOption={onAddCustomLandLandscapeOption}
+                  onRemoveOption={onRemoveCustomLandLandscapeOption}
+                />
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -470,17 +621,14 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                 </div>
                 {isHouses && (
                   <>
-                    <div className="space-y-2">
-                      <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Тип дома</label>
-                      <select 
-                        name="houseSubtype" 
-                        value={formData.houseSubtype || ''} 
-                        onChange={handleChange} 
-                        className="w-full bg-slate-50 rounded-2xl p-4 outline-none font-bold"
-                      >
-                        {HOUSE_TYPES_EXTENDED.map((t: string) => <option key={t} value={t}>{t}</option>)}
-                      </select>
-                    </div>
+                    <EditableSingleSelect
+                      label="Тип дома"
+                      initialOptions={availableHouseTypes}
+                      selected={formData.houseSubtype || ''}
+                      onChange={(value: string) => handleChange({ target: { name: 'houseSubtype', value } } as any)}
+                      onAddCustomOption={onAddCustomHouseType}
+                      onRemoveOption={onRemoveCustomHouseType}
+                    />
                     <div className="space-y-2">
                       <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2">Площадь участка (сот.)</label>
                       <input 
@@ -591,6 +739,26 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                     onRemoveOption={onRemoveCustomBathroomOption}
                   />
                 </div>
+                <div className="space-y-2">
+                  <EditableSingleSelect
+                    label="Тип сделки"
+                    initialOptions={availableDealTypeOptions}
+                    selected={formData.dealType || ''}
+                    onChange={(value: string) => setFormData({...formData, dealType: value})}
+                    onAddCustomOption={onAddCustomDealTypeOption}
+                    onRemoveOption={onRemoveCustomDealTypeOption}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <EditableSingleSelect
+                    label="Планировка"
+                    initialOptions={availablePlanningStatusOptions}
+                    selected={formData.planningStatus || ''}
+                    onChange={(value: string) => setFormData({...formData, planningStatus: value})}
+                    onAddCustomOption={onAddCustomPlanningStatusOption}
+                    onRemoveOption={onRemoveCustomPlanningStatusOption}
+                  />
+                </div>
               </div>
             )}
             
@@ -630,34 +798,42 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                 <EditableMultiSelect 
                   label="Бытовая техника" 
                   prefix="Выбрано" 
-                  initialOptions={TECH_OPTIONS}
+                  initialOptions={availableTechOptions}
+                  constantOptions={TECH_OPTIONS}
                   selected={formData.tech || []} 
                   onChange={(s: string[]) => setFormData(p => ({...p, tech: s}))} 
                   onAddCustomOption={onAddCustomTechOption}
+                  onRemoveOption={onRemoveCustomTechOption}
                 />
                 <EditableMultiSelect 
                   label="Комфорт" 
                   prefix="Выбрано" 
-                  initialOptions={COMFORT_OPTIONS}
+                  initialOptions={availableComfortOptions}
+                  constantOptions={COMFORT_OPTIONS}
                   selected={formData.comfort || []} 
                   onChange={(s: string[]) => setFormData(p => ({...p, comfort: s}))} 
                   onAddCustomOption={onAddCustomComfortOption}
+                  onRemoveOption={onRemoveCustomComfortOption}
                 />
                 <EditableMultiSelect 
                   label="Коммуникации" 
                   prefix="Выбрано" 
-                  initialOptions={COMM_OPTIONS}
+                  initialOptions={availableCommOptions}
+                  constantOptions={COMM_OPTIONS}
                   selected={formData.comm || []} 
                   onChange={(s: string[]) => setFormData(p => ({...p, comm: s}))} 
                   onAddCustomOption={onAddCustomCommOption}
+                  onRemoveOption={onRemoveCustomCommOption}
                 />
                 <EditableMultiSelect 
                   label="Инфраструктура" 
                   prefix="Выбрано" 
-                  initialOptions={INFRA_OPTIONS}
+                  initialOptions={availableInfraOptions}
+                  constantOptions={INFRA_OPTIONS}
                   selected={formData.infra || []} 
                   onChange={(s: string[]) => setFormData(p => ({...p, infra: s}))} 
                   onAddCustomOption={onAddCustomInfraOption}
+                  onRemoveOption={onRemoveCustomInfraOption}
                 />
               </div>
             </section>

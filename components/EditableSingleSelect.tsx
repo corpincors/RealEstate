@@ -139,6 +139,23 @@ const EditableSingleSelect: React.FC<EditableSingleSelectProps> = ({
                   </button>
                 </div>
               ))
+            ) : inputValue.trim() ? (
+              <div className="flex items-center justify-between gap-3 text-xs font-semibold cursor-pointer group">
+                <span
+                  onClick={handleAddCustomOption}
+                  className="flex-grow transition-colors text-blue-600 hover:text-blue-700"
+                >
+                  Добавить "{inputValue.trim()}"
+                </span>
+                <button
+                  type="button"
+                  onClick={handleAddCustomOption}
+                  className="p-1 bg-blue-50 rounded-full hover:bg-blue-100 text-blue-600 transition"
+                  title="Добавить"
+                >
+                  <Plus className="w-3 h-3" />
+                </button>
+              </div>
             ) : (
               <p className="text-xs text-slate-500">Нет совпадений</p>
             )}

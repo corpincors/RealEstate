@@ -30,8 +30,8 @@ const LoginPage: React.FC = () => {
             <Home className="text-white w-7 h-7" />
           </div>
           <div>
-            <h1 className="text-3xl font-[900] text-slate-900 tracking-tight">
-              MaryanaEstate
+            <h1 className="text-xl font-[900] text-slate-900 tracking-tight">
+              Maryana_Ivshyna
             </h1>
             <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.4em]">
               Вход в CRM

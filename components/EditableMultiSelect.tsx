@@ -41,9 +41,10 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
 
   // Add this useEffect for debugging
   useEffect(() => {
-    // console.log(`EditableMultiSelect (${label}) - initialOptions prop received:`, initialOptions); // Removed log
-    // console.log(`EditableMultiSelect (${label}) - selected prop received:`, selected); // Removed log
-  }, [initialOptions, selected, label]);
+    console.log(`EditableMultiSelect (${label}) - initialOptions prop received:`, initialOptions); // Removed log
+    console.log(`EditableMultiSelect (${label}) - constantOptions prop received:`, constantOptions); // Added log
+    console.log(`EditableMultiSelect (${label}) - selected prop received:`, selected); // Removed log
+  }, [initialOptions, constantOptions, selected, label]);
 
   const filteredOptions = useMemo(() => {
     return initialOptions.filter(option =>
@@ -52,10 +53,15 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
   }, [initialOptions, inputValue]);
 
   const toggleOption = (option: string) => {
+    console.log(`[${label}] toggleOption called with:`, option, 'current selected:', selected);
     if (selected.includes(option)) {
-      onChange(selected.filter((item: string) => item !== option));
+      const newSelected = selected.filter((item: string) => item !== option);
+      console.log(`[${label}] Removing option, new selected:`, newSelected);
+      onChange(newSelected);
     } else {
-      onChange([...selected, option]);
+      const newSelected = [...selected, option];
+      console.log(`[${label}] Adding option, new selected:`, newSelected);
+      onChange(newSelected);
     }
   };
 
@@ -93,7 +99,7 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
 
   return (
     <div className="relative space-y-2" ref={containerRef}>
-      <label className={`text-[10px] font-black text-${accentColor}-500 uppercase tracking-wider ml-1`}>
+      <label className={`text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1`}>
         {label}
       </label>
       <button 
@@ -148,7 +154,10 @@ const EditableMultiSelect: React.FC<EditableMultiSelectProps> = ({
                   {!constantOptions.includes(option) && (
                     <button
                       type="button"
-                      onClick={(e: React.MouseEvent) => handleRemove(e, option)}
+                      onClick={(e: React.MouseEvent) => {
+                        console.log(`[${label}] Removing option: ${option}, constantOptions:`, constantOptions);
+                        handleRemove(e, option);
+                      }}
                       className="p-1 bg-slate-50 rounded-full hover:bg-red-100 text-slate-400 hover:text-red-600 transition"
                       title="Удалить"
                     >

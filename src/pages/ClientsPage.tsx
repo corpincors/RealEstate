@@ -5,9 +5,10 @@ import { Client } from '../../types';
 import { PlusCircle, Users, Edit, Trash2 } from '../../components/Icons';
 import ClientFormModal from '../components/ClientFormModal';
 import { showSuccess, showError } from '../utils/toast';
+import { API_BASE_URL } from '../config';
 // import { useNavigate } from 'react-router-dom'; // Удален неиспользуемый импорт
 
-const API_URL = '/api/clients';
+const API_URL = `${API_BASE_URL}/clients`;
 
 const ClientsPage: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([]);

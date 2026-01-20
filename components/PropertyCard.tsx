@@ -8,10 +8,11 @@ interface PropertyCardProps {
   property: Property;
   onEdit?: (property: Property) => void;
   onDelete?: (id: string) => void;
+  onUpdateStatus?: (id: string, status: 'available' | 'sold' | 'advance') => void;
   isClientView?: boolean;
 }
 
-const PropertyCard: React.FC<PropertyCardProps> = ({ property, onEdit, onDelete, isClientView }) => {
+const PropertyCard: React.FC<PropertyCardProps> = ({ property, onEdit, onDelete, onUpdateStatus, isClientView }) => {
   const [currentImg, setCurrentImg] = useState(0);
   const pricePerMeter = Math.round(property.price / (property.category === 'land' ? property.landArea || 1 : property.totalArea));
 
@@ -35,7 +36,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onEdit, onDelete,
       const updatedProperty = { ...property, publicLink: clientUrl };
       console.log('Sending PUT request with data:', updatedProperty);
 
-      const response = await fetch(`/api/properties/${property.id}`, {
+      const response = await fetch(`${API_BASE_URL}/properties/${property.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedProperty), // Save the generated link
@@ -79,7 +80,15 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onEdit, onDelete,
   };
 
   const getCategoryTag = () => {
-    if (property.category === 'land') return 'Участок';
+    if (property.category === 'land') {
+      let tag = 'Участок';
+      if (property.locationType === 'inCity') {
+        tag += ' (В городе)';
+      } else if (property.locationType === 'outsideCity' && property.distanceFromCityKm !== undefined) {
+        tag += ` (${property.distanceFromCityKm} км от города)`;
+      }
+      return tag;
+    }
     if (property.category === 'houses') {
       let tag = property.houseSubtype || 'Дома'; // Используем houseSubtype
       if (property.locationType === 'inCity') {
@@ -99,8 +108,26 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onEdit, onDelete,
         <img 
           src={property.imageUrls[currentImg] || 'https://via.placeholder.com/800x600?text=No+Image'} 
           alt={property.address}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ${
+            property.status === 'sold' || property.status === 'advance' ? 'blur-sm' : ''
+          }`}
         />
+        
+        {/* Оверлей для статусов */}
+        {(property.status === 'sold' || property.status === 'advance') && (
+          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+            <div className="text-center">
+              <div className={`text-4xl font-black mb-2 ${
+                property.status === 'sold' ? 'text-red-500' : 'text-yellow-500'
+              }`}>
+                {property.status === 'sold' ? 'ПРОДАНО' : 'АВАНС'}
+              </div>
+              <div className="text-white text-sm font-bold">
+                {property.status === 'sold' ? 'Объект продан' : 'Объект под авансом'}
+              </div>
+            </div>
+          </div>
+        )}
         
         {property.imageUrls.length > 1 && (
           <>
@@ -186,6 +213,36 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onEdit, onDelete,
         </div>
 
         <div className="flex flex-col gap-2 pt-4 border-t border-slate-50">
+          {!isClientView && (
+            <>
+              {property.status === 'available' && (
+                <div className="flex gap-2 w-full">
+                  <button 
+                    onClick={() => onUpdateStatus && onUpdateStatus(property.id, 'advance')}
+                    className="flex-grow bg-[#F8FAFC] hover:bg-blue-100 text-[#1E293B] py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95"
+                  >
+                    Аванс
+                  </button>
+                  <button 
+                    onClick={() => onUpdateStatus && onUpdateStatus(property.id, 'sold')}
+                    className="flex-grow bg-[#F8FAFC] hover:bg-blue-100 text-[#1E293B] py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95"
+                  >
+                    Продано
+                  </button>
+                </div>
+              )}
+              
+              {(property.status === 'sold' || property.status === 'advance') && (
+                <button 
+                  onClick={() => onUpdateStatus && onUpdateStatus(property.id, 'available')}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95"
+                >
+                  {property.status === 'sold' ? 'Вернуть в актуальные' : 'Отменить аванс'}
+                </button>
+              )}
+            </>
+          )}
+          
           <div className="flex gap-2 w-full">
             {!isClientView && onEdit ? (
               <button 
