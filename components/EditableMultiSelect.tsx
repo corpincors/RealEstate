@@ -4,8 +4,8 @@ import { ChevronDown, Plus, X } from './Icons';
 interface EditableMultiSelectProps {
   label: string;
   prefix: string;
-  initialOptions: string[]; // All available options (constants + custom)
-  constantOptions: string[]; // Original, non-removable constant options
+  initialOptions: readonly string[] | string[]; // All available options (constants + custom)
+  constantOptions: readonly string[] | string[]; // Original, non-removable constant options
   selected: string[];
   onChange: (selected: string[]) => void;
   onAddCustomOption: (option: string) => void;

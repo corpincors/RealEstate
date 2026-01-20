@@ -190,11 +190,15 @@ const App: React.FC = () => {
     }
   }, []);
 
-  const getUniqueOptions = useCallback((initialConstants: string[], customList: string[] | undefined, propertyKey: string) => {
-    const propertyValues = properties.map(p => p[propertyKey as keyof Property]).filter(v => typeof v === 'string' && v.trim() !== '');
+  const getUniqueOptions = useCallback((initialConstants: readonly string[] | string[], customList: string[] | undefined, propertyKey: string) => {
+    const propertyValues = properties.flatMap(p => {
+      const val = p[propertyKey as keyof Property];
+      return Array.isArray(val) ? val : [val];
+    }).filter((v): v is string => typeof v === 'string' && v.trim() !== '');
+    
     const customValues = Array.isArray(customList) ? customList : [];
     const combined = [...initialConstants, ...customValues, ...propertyValues];
-    return Array.from(new Set(combined.filter(v => typeof v === 'string' && v.trim() !== ''))).sort();
+    return Array.from(new Set(combined)).sort();
   }, [properties]);
 
   // Dynamic option lists for SingleSelectWithDelete
@@ -239,26 +243,85 @@ const App: React.FC = () => {
   }, [updateCustomOptionsOnServer]);
 
   // Functions to remove custom options
-  const handleRemoveCustomOption = useCallback((category: keyof typeof customOptions, optionToRemove: string, initialConstants: string[]) => {
-    console.log(`[App] Attempting to remove custom option: ${optionToRemove} from category: ${category}`); // Added log
-    console.log(`[App] Current customOptions before removal:`, customOptions); // Added log
+  const handleRemoveCustomOption = useCallback(async (category: keyof typeof customOptions, optionToRemove: string, initialConstants: readonly string[] | string[], propertyKey?: keyof Property) => {
+    console.log(`[App] Attempting to remove custom option: ${optionToRemove} from category: ${category}`);
     if (initialConstants.includes(optionToRemove)) {
       showError(`Нельзя удалить предопределенную опцию "${optionToRemove}".`);
-      console.warn(`[App] Attempted to remove constant option: ${optionToRemove}`); // Added log
-      return;
-    }
-    if (!window.confirm(`Вы уверены, что хотите удалить пользовательскую опцию "${optionToRemove}"?`)) {
       return;
     }
 
-    setCustomOptions(prev => {
-      const updatedCategory = prev[category].filter(opt => opt !== optionToRemove);
-      const updatedOptions = { ...prev, [category]: updatedCategory };
-      console.log(`[App] New customOptions state for ${category} after removal:`, updatedCategory); // Added log
-      updateCustomOptionsOnServer(updatedOptions);
-      return updatedOptions;
-    });
-  }, [updateCustomOptionsOnServer]);
+    // Проверка использования в объектах
+    let usageCount = 0;
+    if (propertyKey) {
+      usageCount = properties.filter(p => {
+        const val = p[propertyKey];
+        if (Array.isArray(val)) {
+          return val.includes(optionToRemove);
+        }
+        return val === optionToRemove;
+      }).length;
+    }
+
+    let confirmMessage = `Вы уверены, что хотите удалить пользовательскую опцию "${optionToRemove}"?`;
+    if (usageCount > 0) {
+      confirmMessage += `\n\nВНИМАНИЕ: Эта опция используется в ${usageCount} объектах. Она будет удалена из них автоматически.`;
+    }
+
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      // 1. Обновление объектов недвижимости
+      if (usageCount > 0 && propertyKey) {
+        const propertiesToUpdate = properties.filter(p => {
+          const val = p[propertyKey];
+          if (Array.isArray(val)) {
+            return val.includes(optionToRemove);
+          }
+          return val === optionToRemove;
+        });
+
+        const updatePromises = propertiesToUpdate.map(async (p) => {
+          let updatedVal: any;
+          const currentVal = p[propertyKey];
+          
+          if (Array.isArray(currentVal)) {
+            updatedVal = currentVal.filter(v => v !== optionToRemove);
+          } else {
+            updatedVal = ''; // Очищаем строковое значение
+          }
+
+          const updatedProperty = { ...p, [propertyKey]: updatedVal };
+          
+          const response = await fetch(`${API_URL}/${p.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedProperty),
+          });
+          
+          if (!response.ok) throw new Error(`Failed to update property ${p.id}`);
+          return response.json();
+        });
+
+        await Promise.all(updatePromises);
+        await fetchProperties(); // Обновляем список объектов
+        showSuccess(`Обновлено ${usageCount} объектов.`);
+      }
+
+      // 2. Удаление из customOptions
+      setCustomOptions(prev => {
+        const updatedCategory = prev[category].filter(opt => opt !== optionToRemove);
+        const updatedOptions = { ...prev, [category]: updatedCategory };
+        updateCustomOptionsOnServer(updatedOptions);
+        return updatedOptions;
+      });
+
+    } catch (error) {
+      console.error("Error removing custom option and updating properties:", error);
+      showError("Ошибка при удалении опции и обновлении объектов.");
+    }
+  }, [properties, fetchProperties, updateCustomOptionsOnServer]);
 
 
   const handleRemoveCustomDistrict = useCallback(async (districtToRemove: string) => {
@@ -699,7 +762,7 @@ const App: React.FC = () => {
                         selected={filters.district || []} 
                         onChange={(s: string[]) => setFilters({...filters, district: s})} 
                         onAddCustomOption={(option: string) => handleAddCustomOption('districts', option)}
-                        onRemoveOption={(option: string) => handleRemoveCustomOption('districts', option, INITIAL_DISTRICTS)}
+                        onRemoveOption={(option: string) => handleRemoveCustomOption('districts', option, INITIAL_DISTRICTS, 'district')}
                       />
 
                       <div className="space-y-3">
@@ -720,11 +783,11 @@ const App: React.FC = () => {
                           selected={filters.houseSubtype || []} 
                           onChange={(s: string[]) => setFilters({...filters, houseSubtype: s})} 
                           onAddCustomOption={(option: string) => handleAddCustomOption('houseTypes', option)}
-                          onRemoveOption={(option: string) => handleRemoveCustomOption('houseTypes', option, HOUSE_TYPES_EXTENDED)}
-                        />
-                      )}
+                        onRemoveOption={(option: string) => handleRemoveCustomOption('houseTypes', option, [...HOUSE_TYPES_EXTENDED], 'houseSubtype')}
+                      />
+                    )}
 
-                      {/* Toggle for Additional Filters - New Position */}
+                    {/* Toggle for Additional Filters - New Position */}
                       <div className={`flex justify-end items-end ${isHouses ? '' : 'lg:col-span-2'}`}>
                         <button
                           type="button"
@@ -759,7 +822,7 @@ const App: React.FC = () => {
                                 selected={filters.landType || []} 
                                 onChange={(s: string[]) => setFilters(p => ({...p, landType: s}))} 
                                 onAddCustomOption={(option: string) => handleAddCustomOption('landTypes', option)}
-                                onRemoveOption={(option: string) => handleRemoveCustomOption('landTypes', option, LAND_TYPES)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('landTypes', option, LAND_TYPES, 'landType')}
                               />
                             </div>
                             <div className="space-y-3">
@@ -772,7 +835,7 @@ const App: React.FC = () => {
                                 selected={filters.landCommunications || []} 
                                 onChange={(s: string[]) => setFilters(p => ({...p, landCommunications: s}))} 
                                 onAddCustomOption={(option: string) => handleAddCustomOption('landCommunicationsOptions', option)}
-                                onRemoveOption={(option: string) => handleRemoveCustomOption('landCommunicationsOptions', option, LAND_COMMUNICATIONS_OPTIONS)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('landCommunicationsOptions', option, LAND_COMMUNICATIONS_OPTIONS, 'landCommunications')}
                               />
                             </div>
                             <div className="space-y-3">
@@ -785,7 +848,7 @@ const App: React.FC = () => {
                                 selected={filters.landStructures || []} 
                                 onChange={(s: string[]) => setFilters(p => ({...p, landStructures: s}))} 
                                 onAddCustomOption={(option: string) => handleAddCustomOption('landStructuresOptions', option)}
-                                onRemoveOption={(option: string) => handleRemoveCustomOption('landStructuresOptions', option, LAND_STRUCTURES_OPTIONS)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('landStructuresOptions', option, LAND_STRUCTURES_OPTIONS, 'landStructures')}
                               />
                             </div>
                             <div className="space-y-3">
@@ -798,7 +861,7 @@ const App: React.FC = () => {
                                 selected={filters.landInfrastructure || []} 
                                 onChange={(s: string[]) => setFilters(p => ({...p, landInfrastructure: s}))} 
                                 onAddCustomOption={(option: string) => handleAddCustomOption('landInfrastructureOptions', option)}
-                                onRemoveOption={(option: string) => handleRemoveCustomOption('landInfrastructureOptions', option, LAND_INFRASTRUCTURE_OPTIONS)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('landInfrastructureOptions', option, LAND_INFRASTRUCTURE_OPTIONS, 'landInfrastructure')}
                               />
                             </div>
                             <div className="space-y-3">
@@ -811,7 +874,7 @@ const App: React.FC = () => {
                                 selected={filters.landLandscape || []} 
                                 onChange={(s: string[]) => setFilters(p => ({...p, landLandscape: s}))} 
                                 onAddCustomOption={(option: string) => handleAddCustomOption('landLandscapeOptions', option)}
-                                onRemoveOption={(option: string) => handleRemoveCustomOption('landLandscapeOptions', option, LAND_LANDSCAPE_OPTIONS)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('landLandscapeOptions', option, LAND_LANDSCAPE_OPTIONS, 'landLandscape')}
                               />
                             </div>
                           </div>
@@ -858,7 +921,7 @@ const App: React.FC = () => {
                                 selected={filters.housingClass || []} 
                                 onChange={(s: string[]) => setFilters({...filters, housingClass: s})} 
                                 onAddCustomOption={(option: string) => handleAddCustomOption('housingClasses', option)}
-                                onRemoveOption={(option: string) => handleRemoveCustomOption('housingClasses', option, HOUSING_CLASSES)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('housingClasses', option, HOUSING_CLASSES, 'housingClass')}
                               />
                             </div>
                             <div className="space-y-3">
@@ -871,7 +934,7 @@ const App: React.FC = () => {
                                 selected={filters.repairType || []} 
                                 onChange={(s: string[]) => setFilters({...filters, repairType: s})} 
                                 onAddCustomOption={(option: string) => handleAddCustomOption('repairTypes', option)}
-                                onRemoveOption={(option: string) => handleRemoveCustomOption('repairTypes', option, REPAIR_TYPES)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('repairTypes', option, REPAIR_TYPES, 'repairType')}
                               />
                             </div>
                             <div className="space-y-3">
@@ -884,7 +947,7 @@ const App: React.FC = () => {
                                 selected={filters.heating || []} 
                                 onChange={(s: string[]) => setFilters({...filters, heating: s})} 
                                 onAddCustomOption={(option: string) => handleAddCustomOption('heatingOptions', option)}
-                                onRemoveOption={(option: string) => handleRemoveCustomOption('heatingOptions', option, HEATING_OPTIONS)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('heatingOptions', option, HEATING_OPTIONS, 'heating')}
                               />
                             </div>
                             <div className="space-y-3">
@@ -897,7 +960,7 @@ const App: React.FC = () => {
                                 selected={filters.yearBuilt || []} 
                                 onChange={(s: string[]) => setFilters({...filters, yearBuilt: s})} 
                                 onAddCustomOption={(option: string) => handleAddCustomOption('yearBuiltOptions', option)}
-                                onRemoveOption={(option: string) => handleRemoveCustomOption('yearBuiltOptions', option, YEAR_BUILT_OPTIONS)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('yearBuiltOptions', option, YEAR_BUILT_OPTIONS, 'yearBuilt')}
                               />
                             </div>
                             <div className="space-y-3">
@@ -910,7 +973,7 @@ const App: React.FC = () => {
                                 selected={filters.wallType || []} 
                                 onChange={(s: string[]) => setFilters({...filters, wallType: s})} 
                                 onAddCustomOption={(option: string) => handleAddCustomOption('wallTypeOptions', option)}
-                                onRemoveOption={(option: string) => handleRemoveCustomOption('wallTypeOptions', option, WALL_TYPE_OPTIONS)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('wallTypeOptions', option, WALL_TYPE_OPTIONS, 'wallType')}
                               />
                             </div>
                             <div className="space-y-3">
@@ -923,7 +986,7 @@ const App: React.FC = () => {
                                 selected={filters.bathroomType || []} 
                                 onChange={(s: string[]) => setFilters({...filters, bathroomType: s})} 
                                 onAddCustomOption={(option: string) => handleAddCustomOption('bathroomOptions', option)}
-                                onRemoveOption={(option: string) => handleRemoveCustomOption('bathroomOptions', option, BATHROOM_OPTIONS)}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('bathroomOptions', option, BATHROOM_OPTIONS, 'bathroomType')}
                               />
                             </div>
                             <div className="space-y-3">
@@ -932,11 +995,11 @@ const App: React.FC = () => {
                                 label="" 
                                 prefix="" 
                                 initialOptions={availableDealTypeOptions}
-                                constantOptions={DEAL_TYPE_OPTIONS as string[]}
+                                constantOptions={[...DEAL_TYPE_OPTIONS]}
                                 selected={filters.dealType || []} 
                                 onChange={(s: string[]) => setFilters({...filters, dealType: s})} 
                                 onAddCustomOption={(option: string) => handleAddCustomOption('dealTypeOptions', option)}
-                                onRemoveOption={(option: string) => handleRemoveCustomOption('dealTypeOptions', option, DEAL_TYPE_OPTIONS as string[])}
+                                onRemoveOption={(option: string) => handleRemoveCustomOption('dealTypeOptions', option, [...DEAL_TYPE_OPTIONS], 'dealType')}
                               />
                             </div>
                             <div className="space-y-3">
@@ -945,14 +1008,14 @@ const App: React.FC = () => {
                                 label="" 
                                 prefix="" 
                                 initialOptions={availablePlanningStatusOptions}
-                                constantOptions={PLANNING_STATUS_OPTIONS as string[]}
+                                constantOptions={[...PLANNING_STATUS_OPTIONS]}
                                 selected={filters.planningStatus || []} 
                                 onChange={(s: string[]) => setFilters({...filters, planningStatus: s})} 
                                 onAddCustomOption={(option: string) => handleAddCustomOption('planningStatusOptions', option)}
-                                onRemoveOption={(option: string) => handleRemoveCustomOption('planningStatusOptions', option, PLANNING_STATUS_OPTIONS as string[])}
-                              />
-                            </div>
+                              onRemoveOption={(option: string) => handleRemoveCustomOption('planningStatusOptions', option, [...PLANNING_STATUS_OPTIONS], 'planningStatus')}
+                            />
                           </div>
+                        </div>
                         )}
 
                         {!isLand && (
@@ -965,7 +1028,7 @@ const App: React.FC = () => {
                               selected={filters.tech || []} 
                               onChange={(s: string[]) => setFilters({...filters, tech: s})} 
                               onAddCustomOption={(option: string) => handleAddCustomOption('techOptions', option)}
-                              onRemoveOption={(option: string) => handleRemoveCustomOption('techOptions', option, TECH_OPTIONS)}
+                              onRemoveOption={(option: string) => handleRemoveCustomOption('techOptions', option, TECH_OPTIONS, 'tech')}
                             />
                             <EditableMultiSelect 
                               label="Комфорт" 
@@ -975,7 +1038,7 @@ const App: React.FC = () => {
                               selected={filters.comfort || []} 
                               onChange={(s: string[]) => setFilters(p => ({...p, comfort: s}))} 
                               onAddCustomOption={(option: string) => handleAddCustomOption('comfortOptions', option)}
-                              onRemoveOption={(option: string) => handleRemoveCustomOption('comfortOptions', option, COMFORT_OPTIONS)}
+                              onRemoveOption={(option: string) => handleRemoveCustomOption('comfortOptions', option, COMFORT_OPTIONS, 'comfort')}
                             />
                             <EditableMultiSelect 
                               label="Коммуникации" 
@@ -985,7 +1048,7 @@ const App: React.FC = () => {
                               selected={filters.comm || []} 
                               onChange={(s: string[]) => setFilters(p => ({...p, comm: s}))} 
                               onAddCustomOption={(option: string) => handleAddCustomOption('commOptions', option)}
-                              onRemoveOption={(option: string) => handleRemoveCustomOption('commOptions', option, COMM_OPTIONS)}
+                              onRemoveOption={(option: string) => handleRemoveCustomOption('commOptions', option, COMM_OPTIONS, 'comm')}
                             />
                             <EditableMultiSelect 
                               label="Инфраструктура" 
@@ -995,7 +1058,7 @@ const App: React.FC = () => {
                               selected={filters.infra || []} 
                               onChange={(s: string[]) => setFilters(p => ({...p, infra: s}))} 
                               onAddCustomOption={(option: string) => handleAddCustomOption('infraOptions', option)}
-                              onRemoveOption={(option: string) => handleRemoveCustomOption('infraOptions', option, INFRA_OPTIONS)}
+                              onRemoveOption={(option: string) => handleRemoveCustomOption('infraOptions', option, INFRA_OPTIONS, 'infra')}
                             />
                           </div>
                         )}
@@ -1097,73 +1160,73 @@ const App: React.FC = () => {
 
         availableHousingClasses={availableHousingClasses}
         onAddCustomHousingClass={(option: string) => handleAddCustomOption('housingClasses', option)}
-        onRemoveCustomHousingClass={(option: string) => handleRemoveCustomOption('housingClasses', option, HOUSING_CLASSES)}
+        onRemoveCustomHousingClass={(option: string) => handleRemoveCustomOption('housingClasses', option, HOUSING_CLASSES, 'housingClass')}
 
         availableRepairTypes={availableRepairTypes}
         onAddCustomRepairType={(option: string) => handleAddCustomOption('repairTypes', option)}
-        onRemoveCustomRepairType={(option: string) => handleRemoveCustomOption('repairTypes', option, REPAIR_TYPES)}
+        onRemoveCustomRepairType={(option: string) => handleRemoveCustomOption('repairTypes', option, REPAIR_TYPES, 'repairType')}
 
         availableHeatingOptions={availableHeatingOptions}
         onAddCustomHeatingOption={(option: string) => handleAddCustomOption('heatingOptions', option)}
-        onRemoveCustomHeatingOption={(option: string) => handleRemoveCustomOption('heatingOptions', option, HEATING_OPTIONS)}
+        onRemoveCustomHeatingOption={(option: string) => handleRemoveCustomOption('heatingOptions', option, HEATING_OPTIONS, 'heating')}
 
         availableYearBuiltOptions={availableYearBuiltOptions}
         onAddCustomYearBuiltOption={(option: string) => handleAddCustomOption('yearBuiltOptions', option)}
-        onRemoveCustomYearBuiltOption={(option: string) => handleRemoveCustomOption('yearBuiltOptions', option, YEAR_BUILT_OPTIONS)}
+        onRemoveCustomYearBuiltOption={(option: string) => handleRemoveCustomOption('yearBuiltOptions', option, YEAR_BUILT_OPTIONS, 'yearBuilt')}
 
         availableWallTypeOptions={availableWallTypeOptions}
         onAddCustomWallTypeOption={(option: string) => handleAddCustomOption('wallTypeOptions', option)}
-        onRemoveCustomWallTypeOption={(option: string) => handleRemoveCustomOption('wallTypeOptions', option, WALL_TYPE_OPTIONS)}
+        onRemoveCustomWallTypeOption={(option: string) => handleRemoveCustomOption('wallTypeOptions', option, WALL_TYPE_OPTIONS, 'wallType')}
 
         availableBathroomOptions={availableBathroomOptions}
         onAddCustomBathroomOption={(option: string) => handleAddCustomOption('bathroomOptions', option)}
-        onRemoveCustomBathroomOption={(option: string) => handleRemoveCustomOption('bathroomOptions', option, BATHROOM_OPTIONS)}
+        onRemoveCustomBathroomOption={(option: string) => handleRemoveCustomOption('bathroomOptions', option, BATHROOM_OPTIONS, 'bathroomType')}
 
         availableLandTypes={availableLandTypes}
         onAddCustomLandType={(option: string) => handleAddCustomOption('landTypes', option)}
-        onRemoveCustomLandType={(option: string) => handleRemoveCustomOption('landTypes', option, LAND_TYPES)}
+        onRemoveCustomLandType={(option: string) => handleRemoveCustomOption('landTypes', option, LAND_TYPES, 'landType')}
 
         availableDealTypeOptions={availableDealTypeOptions}
         onAddCustomDealTypeOption={(option: string) => handleAddCustomOption('dealTypeOptions', option)}
-        onRemoveCustomDealTypeOption={(option: string) => handleRemoveCustomOption('dealTypeOptions', option, DEAL_TYPE_OPTIONS)}
+        onRemoveCustomDealTypeOption={(option: string) => handleRemoveCustomOption('dealTypeOptions', option, DEAL_TYPE_OPTIONS, 'dealType')}
 
         availablePlanningStatusOptions={availablePlanningStatusOptions}
         onAddCustomPlanningStatusOption={(option: string) => handleAddCustomOption('planningStatusOptions', option)}
-        onRemoveCustomPlanningStatusOption={(option: string) => handleRemoveCustomOption('planningStatusOptions', option, PLANNING_STATUS_OPTIONS)}
+        onRemoveCustomPlanningStatusOption={(option: string) => handleRemoveCustomOption('planningStatusOptions', option, PLANNING_STATUS_OPTIONS, 'planningStatus')}
 
         availableHouseTypes={availableHouseTypes}
         onAddCustomHouseType={(option: string) => handleAddCustomOption('houseTypes', option)}
-        onRemoveCustomHouseType={(option: string) => handleRemoveCustomOption('houseTypes', option, HOUSE_TYPES_EXTENDED)}
+        onRemoveCustomHouseType={(option: string) => handleRemoveCustomOption('houseTypes', option, HOUSE_TYPES_EXTENDED, 'houseSubtype')}
 
         availableTechOptions={availableTechOptions} 
         onAddCustomTechOption={(option: string) => handleAddCustomOption('techOptions', option)}
-        onRemoveCustomTechOption={(option: string) => handleRemoveCustomOption('techOptions', option, TECH_OPTIONS)} 
+        onRemoveCustomTechOption={(option: string) => handleRemoveCustomOption('techOptions', option, TECH_OPTIONS, 'tech')} 
         availableComfortOptions={availableComfortOptions}
         onAddCustomComfortOption={(option: string) => handleAddCustomOption('comfortOptions', option)}
-        onRemoveCustomComfortOption={(option: string) => handleRemoveCustomOption('comfortOptions', option, COMFORT_OPTIONS)} 
+        onRemoveCustomComfortOption={(option: string) => handleRemoveCustomOption('comfortOptions', option, COMFORT_OPTIONS, 'comfort')} 
         availableCommOptions={availableCommOptions}
         onAddCustomCommOption={(option: string) => handleAddCustomOption('commOptions', option)}
-        onRemoveCustomCommOption={(option: string) => handleRemoveCustomOption('commOptions', option, COMM_OPTIONS)} 
+        onRemoveCustomCommOption={(option: string) => handleRemoveCustomOption('commOptions', option, COMM_OPTIONS, 'comm')} 
         availableInfraOptions={availableInfraOptions}
         onAddCustomInfraOption={(option: string) => handleAddCustomOption('infraOptions', option)}
-        onRemoveCustomInfraOption={(option: string) => handleRemoveCustomOption('infraOptions', option, INFRA_OPTIONS)}
+        onRemoveCustomInfraOption={(option: string) => handleRemoveCustomOption('infraOptions', option, INFRA_OPTIONS, 'infra')}
         
         // Новые пропсы для земельных участков
         availableLandCommunicationsOptions={availableLandCommunicationsOptions}
         onAddCustomLandCommunicationsOption={(option: string) => handleAddCustomOption('landCommunicationsOptions', option)}
-        onRemoveCustomLandCommunicationsOption={(option: string) => handleRemoveCustomOption('landCommunicationsOptions', option, LAND_COMMUNICATIONS_OPTIONS)}
+        onRemoveCustomLandCommunicationsOption={(option: string) => handleRemoveCustomOption('landCommunicationsOptions', option, LAND_COMMUNICATIONS_OPTIONS, 'landCommunications')}
         
         availableLandStructuresOptions={availableLandStructuresOptions}
         onAddCustomLandStructuresOption={(option: string) => handleAddCustomOption('landStructuresOptions', option)}
-        onRemoveCustomLandStructuresOption={(option: string) => handleRemoveCustomOption('landStructuresOptions', option, LAND_STRUCTURES_OPTIONS)}
+        onRemoveCustomLandStructuresOption={(option: string) => handleRemoveCustomOption('landStructuresOptions', option, LAND_STRUCTURES_OPTIONS, 'landStructures')}
         
         availableLandInfrastructureOptions={availableLandInfrastructureOptions}
         onAddCustomLandInfrastructureOption={(option: string) => handleAddCustomOption('landInfrastructureOptions', option)}
-        onRemoveCustomLandInfrastructureOption={(option: string) => handleRemoveCustomOption('landInfrastructureOptions', option, LAND_INFRASTRUCTURE_OPTIONS)}
+        onRemoveCustomLandInfrastructureOption={(option: string) => handleRemoveCustomOption('landInfrastructureOptions', option, LAND_INFRASTRUCTURE_OPTIONS, 'landInfrastructure')}
         
         availableLandLandscapeOptions={availableLandLandscapeOptions}
         onAddCustomLandLandscapeOption={(option: string) => handleAddCustomOption('landLandscapeOptions', option)}
-        onRemoveCustomLandLandscapeOption={(option: string) => handleRemoveCustomOption('landLandscapeOptions', option, LAND_LANDSCAPE_OPTIONS)}
+        onRemoveCustomLandLandscapeOption={(option: string) => handleRemoveCustomOption('landLandscapeOptions', option, LAND_LANDSCAPE_OPTIONS, 'landLandscape')}
       />
     </div>
   );
