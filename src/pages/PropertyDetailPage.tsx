@@ -7,6 +7,7 @@ import {
 import { 
   CATEGORIES
 } from '../../constants';
+import { getImageUrl } from '../utils/image';
 
 interface PropertyDetailPageProps {
   properties: Property[];
@@ -78,7 +79,7 @@ const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({ properties }) =
         {/* Image Gallery */}
         <div className="relative h-[500px] rounded-3xl overflow-hidden mb-10">
           <img 
-            src={property.imageUrls[currentImg] || 'https://via.placeholder.com/1200x800?text=No+Image'} 
+            src={getImageUrl(property.imageUrls[currentImg]) || 'https://via.placeholder.com/1200x800?text=No+Image'} 
             alt={property.address}
             className={`w-full h-full object-cover ${
               property.status === 'sold' || property.status === 'advance' ? 'blur-sm' : ''

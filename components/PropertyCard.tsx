@@ -4,6 +4,7 @@ import { Property } from '../types';
 import { MapPin, Heart, Eye, Phone, Link as LinkIcon, ChevronLeft, ChevronRight, Trash2 } from './Icons';
 import { showSuccess, showError } from '../src/utils/toast'; // Import toast utilities
 import { API_BASE_URL } from '../src/config';
+import { getImageUrl } from '../src/utils/image';
 
 interface PropertyCardProps {
   property: Property;

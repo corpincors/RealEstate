@@ -11,6 +11,7 @@ import {
   LAND_COMMUNICATIONS_OPTIONS, LAND_STRUCTURES_OPTIONS, LAND_INFRASTRUCTURE_OPTIONS, LAND_LANDSCAPE_OPTIONS
 } from '../constants.tsx';
 import { API_BASE_URL } from '../src/config';
+import { getImageUrl } from '../src/utils/image';
 
 interface PropertyFormModalProps {
   isOpen: boolean;
@@ -411,7 +412,7 @@ const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {formData.imageUrls?.map((url: string, idx: number) => (
                 <div key={idx} className="aspect-square rounded-2xl overflow-hidden relative group shadow-sm border border-slate-100">
-                  <img src={url} className="w-full h-full object-cover" alt="" />
+                  <img src={getImageUrl(url)} className="w-full h-full object-cover" alt="" />
                   <button 
                     type="button"
                     onClick={() => removePhoto(idx)}

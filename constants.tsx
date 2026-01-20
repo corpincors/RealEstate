@@ -29,9 +29,9 @@ export const HOUSE_TYPES_EXTENDED = [
 ] as const;
 
 // Новые константы для квартир - будут заполняться вручную через плюсик
-export const DEAL_TYPE_OPTIONS = [] as const;
-export const PLANNING_STATUS_OPTIONS = [] as const;
-export const YEAR_BUILT_OPTIONS = [] as const;
+export const DEAL_TYPE_OPTIONS: string[] = [];
+export const PLANNING_STATUS_OPTIONS: string[] = [];
+export const YEAR_BUILT_OPTIONS: string[] = [];
 
 export const LOCATION_TYPES = ['В городе', 'За городом'] as const;
 

@@ -1,5 +1,39 @@
 {
-  "properties": [],
+  "properties": [
+    {
+      "category": "apartments",
+      "type": "Secondary",
+      "status": "available",
+      "price": 233223,
+      "district": "Малиновский",
+      "address": "323",
+      "ownerPhone": "323",
+      "totalArea": 3233,
+      "rooms": "1",
+      "hasFurniture": false,
+      "hasRepair": false,
+      "tech": [],
+      "comfort": [],
+      "comm": [],
+      "infra": [],
+      "isEOselya": false,
+      "description": "",
+      "imageUrls": [
+        "/uploads/1768909356015-388133588.png"
+      ],
+      "houseSubtype": "Клубный дом",
+      "locationType": "inCity",
+      "cadastralNumber": "",
+      "landCommunications": [],
+      "landStructures": [],
+      "landInfrastructure": [],
+      "landLandscape": [],
+      "floor": 32,
+      "totalFloors": 323,
+      "kitchenArea": -1,
+      "id": "luj729lky"
+    }
+  ],
   "clients": [
     {
       "clientName": "Ваоентин",
@@ -13,7 +47,11 @@
     "districts": [],
     "housingClasses": [],
     "repairTypes": [],
-    "heatingOptions": [],
+    "heatingOptions": [
+      "2",
+      "3",
+      "й"
+    ],
     "yearBuiltOptions": [],
     "wallTypeOptions": [],
     "bathroomOptions": [],
